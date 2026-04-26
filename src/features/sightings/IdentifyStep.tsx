@@ -1,4 +1,5 @@
 import { AnimalSearch } from '@/features/animals/AnimalSearch';
+import { useT } from '@/i18n';
 import type { WikiSearchResult } from '@/lib/wikipedia';
 
 interface IdentifyStepProps {
@@ -6,11 +7,12 @@ interface IdentifyStepProps {
 }
 
 export function IdentifyStep({ onAnimalSelected }: IdentifyStepProps) {
+  const t = useT();
   return (
     <div>
-      <h2 className="text-2xl font-extrabold">¿Qué es?</h2>
+      <h2 className="text-2xl font-extrabold">{t('newSighting.identifyTitle')}</h2>
       <p className="mt-1 text-foreground/60">
-        Escribe el nombre y elige el correcto.
+        {t('newSighting.identifySubtitle')}
       </p>
       <div className="mt-6">
         <AnimalSearch onSelect={onAnimalSelected} />

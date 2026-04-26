@@ -1,3 +1,6 @@
+import type { Locale } from '@/i18n';
+import { getLocale } from '@/i18n';
+
 /**
  * Cliente fino de Wikimedia Commons vía la REST de Wikipedia.
  * Devuelve la URL del primer archivo de audio asociado al artículo de un animal.
@@ -6,7 +9,9 @@
  * Si no hay audio disponible o falla la red, devuelve undefined.
  */
 
-const REST_MEDIA_LIST = 'https://es.wikipedia.org/api/rest_v1/page/media-list';
+function mediaListUrl(lang: Locale) {
+  return `https://${lang}.wikipedia.org/api/rest_v1/page/media-list`;
+}
 
 interface MediaSrcEntry {
   src: string;
@@ -26,10 +31,11 @@ interface MediaListResponse {
 
 export async function fetchAnimalSound(
   title: string,
+  lang: Locale = getLocale(),
 ): Promise<string | undefined> {
   try {
     const res = await fetch(
-      `${REST_MEDIA_LIST}/${encodeURIComponent(title)}`,
+      `${mediaListUrl(lang)}/${encodeURIComponent(title)}`,
     );
     if (!res.ok) return undefined;
     const data: MediaListResponse = await res.json();

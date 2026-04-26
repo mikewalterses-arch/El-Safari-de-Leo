@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { searchAnimals, type WikiSearchResult } from '@/lib/wikipedia';
+import { useLocaleStore, useT } from '@/i18n';
 
 interface AnimalSearchProps {
   onSelect: (result: WikiSearchResult) => void;
 }
 
 export function AnimalSearch({ onSelect }: AnimalSearchProps) {
+  const t = useT();
+  const locale = useLocaleStore((s) => s.locale);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<WikiSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,13 +23,13 @@ export function AnimalSearch({ onSelect }: AnimalSearchProps) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    const t = setTimeout(() => {
-      searchAnimals(query)
+    const handle = setTimeout(() => {
+      searchAnimals(query, { lang: locale })
         .then((r) => {
           if (!cancelled) setResults(r);
         })
         .catch(() => {
-          if (!cancelled) setError('No se pudo buscar. ¿Hay internet?');
+          if (!cancelled) setError(t('newSighting.searchError'));
         })
         .finally(() => {
           if (!cancelled) setLoading(false);
@@ -34,20 +37,22 @@ export function AnimalSearch({ onSelect }: AnimalSearchProps) {
     }, 300);
     return () => {
       cancelled = true;
-      clearTimeout(t);
+      clearTimeout(handle);
     };
-  }, [query]);
+  }, [query, locale, t]);
 
   return (
     <div>
       <label className="block">
-        <span className="mb-2 block text-base font-semibold">¿Qué animal viste?</span>
+        <span className="mb-2 block text-base font-semibold">
+          {t('newSighting.searchLabel')}
+        </span>
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-foreground/40" />
           <input
             type="text"
             autoFocus
-            placeholder="Escribe el nombre..."
+            placeholder={t('newSighting.searchPlaceholder')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full rounded-button border border-foreground/15 bg-cream py-3 pl-10 pr-4 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -55,7 +60,11 @@ export function AnimalSearch({ onSelect }: AnimalSearchProps) {
         </div>
       </label>
 
-      {loading && <p className="mt-4 text-sm text-foreground/60">Buscando...</p>}
+      {loading && (
+        <p className="mt-4 text-sm text-foreground/60">
+          {t('newSighting.searching')}
+        </p>
+      )}
       {error && <p className="mt-4 text-sm font-semibold text-coral">{error}</p>}
 
       {results.length > 0 && (

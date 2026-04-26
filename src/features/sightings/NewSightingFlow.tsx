@@ -8,12 +8,14 @@ import { createSighting } from './createSighting';
 import { ensureAnimal } from '@/features/animals/cacheAnimal';
 import { useAuth } from '@/features/auth/useAuth';
 import { getCurrentLocation } from '@/lib/geolocation';
+import { useT } from '@/i18n';
 import type { WikiSearchResult } from '@/lib/wikipedia';
 import type { SightingLocation } from '@/types/models';
 
 type Step = 'photo' | 'identify' | 'confirm' | 'saving' | 'done';
 
 export function NewSightingFlow() {
+  const t = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -25,8 +27,7 @@ export function NewSightingFlow() {
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // En cuanto Leo hace la foto, lanzamos GPS en background — para cuando llegue al
-  // paso de confirmación normalmente ya está resuelto. Si falla, no es bloqueante.
+  // GPS en background mientras Leo identifica.
   useEffect(() => {
     if (!photo || location) return;
     getCurrentLocation()
@@ -65,6 +66,8 @@ export function NewSightingFlow() {
         location,
         notes,
       });
+      // Vibración táctil corta al guardar (móviles que la soporten).
+      navigator.vibrate?.([60, 30, 60]);
       setStep('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar');
@@ -72,12 +75,12 @@ export function NewSightingFlow() {
     }
   };
 
-  // Tras "done" llevamos a Leo al diario con el avistamiento recién hecho.
-  // TODO(fase-5): aquí va la animación de descubrimiento si es primer avistamiento.
+  // Tras "done" llevamos a Leo al diario.
+  // TODO(fase-5): aquí va la animación de descubrimiento si isFirstDiscovery.
   useEffect(() => {
     if (step !== 'done') return;
-    const t = setTimeout(() => navigate('/diario'), 1500);
-    return () => clearTimeout(t);
+    const handle = setTimeout(() => navigate('/diario'), 1500);
+    return () => clearTimeout(handle);
   }, [step, navigate]);
 
   if (step === 'photo') {
@@ -87,10 +90,10 @@ export function NewSightingFlow() {
     return <IdentifyStep onAnimalSelected={onAnimalSelected} />;
   }
   if (step === 'saving') {
-    return <FlowStateMessage label="Guardando tu avistamiento..." spinning />;
+    return <FlowStateMessage label={t('newSighting.saving')} spinning />;
   }
   if (step === 'done') {
-    return <FlowStateMessage label="¡Guardado!" success />;
+    return <FlowStateMessage label={t('newSighting.saved')} success />;
   }
 
   if (animal && photo) {

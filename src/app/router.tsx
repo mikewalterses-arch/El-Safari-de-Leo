@@ -6,6 +6,7 @@ import { Collection } from '@/pages/Collection/Collection';
 import { Diary } from '@/pages/Diary/Diary';
 import { NewSighting } from '@/pages/NewSighting/NewSighting';
 import { Profile } from '@/pages/Profile/Profile';
+import { AnimalDetail } from '@/pages/AnimalDetail/AnimalDetail';
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: 'diario', element: <Diary /> },
       { path: 'nuevo', element: <NewSighting /> },
       { path: 'perfil', element: <Profile /> },
+      { path: 'animal/:animalId', element: <AnimalDetail /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

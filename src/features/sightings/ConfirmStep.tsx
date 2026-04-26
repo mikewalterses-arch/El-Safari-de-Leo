@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Check, MapPin } from 'lucide-react';
+import { useT } from '@/i18n';
 import type { WikiSearchResult } from '@/lib/wikipedia';
 import type { SightingLocation } from '@/types/models';
 
@@ -24,6 +25,7 @@ export function ConfirmStep({
   onBack,
   error,
 }: ConfirmStepProps) {
+  const t = useT();
   const [photoUrl, setPhotoUrl] = useState('');
 
   useEffect(() => {
@@ -35,9 +37,9 @@ export function ConfirmStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-extrabold">¡Casi! ¿Algo más?</h2>
+        <h2 className="text-2xl font-extrabold">{t('newSighting.confirmTitle')}</h2>
         <p className="mt-1 text-foreground/60">
-          Revisa los datos y guarda tu avistamiento.
+          {t('newSighting.confirmSubtitle')}
         </p>
       </div>
 
@@ -51,32 +53,32 @@ export function ConfirmStep({
 
       <div className="rounded-card border border-foreground/10 bg-cream p-4">
         <p className="text-xs font-extrabold uppercase tracking-wide text-foreground/60">
-          Animal
+          {t('newSighting.animal')}
         </p>
         <p className="mt-1 text-lg font-extrabold">{animal.title}</p>
       </div>
 
       <div className="rounded-card border border-foreground/10 bg-cream p-4">
         <p className="flex items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-foreground/60">
-          <MapPin className="h-3 w-3" /> Lugar
+          <MapPin className="h-3 w-3" /> {t('newSighting.location')}
         </p>
         <p className="mt-1 text-base">
           {location?.placeName
             ? location.placeName
             : location
               ? `${location.lat.toFixed(3)}, ${location.lng.toFixed(3)}`
-              : 'Sin ubicación'}
+              : t('newSighting.noLocation')}
         </p>
       </div>
 
       <label className="block">
         <span className="text-xs font-extrabold uppercase tracking-wide text-foreground/60">
-          Tu nota (opcional)
+          {t('newSighting.note')}
         </span>
         <textarea
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          placeholder="Lo que quieras contar de este animal..."
+          placeholder={t('newSighting.notePlaceholder')}
           rows={3}
           className="mt-2 w-full rounded-card border border-foreground/15 bg-cream p-3 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
@@ -90,7 +92,7 @@ export function ConfirmStep({
           onClick={onBack}
           className="flex-1 rounded-button border border-foreground/20 py-3 font-semibold"
         >
-          Atrás
+          {t('common.back')}
         </button>
         <button
           type="button"
@@ -98,7 +100,7 @@ export function ConfirmStep({
           className="flex flex-[2] items-center justify-center gap-2 rounded-button bg-accent py-3 font-extrabold text-foreground shadow-card"
         >
           <Check className="h-5 w-5" strokeWidth={2.5} />
-          Guardar
+          {t('newSighting.save')}
         </button>
       </div>
     </div>

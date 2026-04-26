@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Placeholder de fase 1. Sustituir en fase 5/6 por el logo real del león. -->
+  <rect width="512" height="512" fill="#7DD3C7"/>
+  <text
+    x="50%"
+    y="54%"
+    font-family="Nunito, ui-sans-serif, system-ui, sans-serif"
+    font-weight="800"
+    font-size="320"
+    fill="#3D2B1F"
+    text-anchor="middle"
+    dominant-baseline="middle"
+  >L</text>
+</svg>

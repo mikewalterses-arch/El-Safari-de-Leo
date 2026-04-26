@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta tropical pastel (brief de diseño) */
+  --color-turquoise: #7dd3c7;
+  --color-coral: #ff9b85;
+  --color-yellow-cream: #ffe5a0;
+  --color-lime: #b8e0a0;
+  --color-cream: #fff9f2;
+  --color-warm-brown: #3d2b1f;
+
+  /* Aliases semánticos — preferir estos en componentes */
+  --color-primary: var(--color-turquoise);
+  --color-accent: var(--color-coral);
+  --color-highlight: var(--color-yellow-cream);
+  --color-success: var(--color-lime);
+  --color-surface: var(--color-cream);
+  --color-foreground: var(--color-warm-brown);
+
+  /* Tipografía: Nunito (cargado en index.html) */
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radios — esquinas redondeadas según brief (12-16px) */
+  --radius-card: 0.875rem; /* 14px */
+  --radius-button: 0.75rem; /* 12px */
+  --radius-pill: 9999px;
+
+  /* Sombras muy suaves según brief */
+  --shadow-soft: 0 1px 3px rgba(61, 43, 31, 0.06),
+    0 1px 2px rgba(61, 43, 31, 0.04);
+  --shadow-card: 0 4px 12px rgba(61, 43, 31, 0.06),
+    0 2px 4px rgba(61, 43, 31, 0.04);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-surface text-foreground font-sans antialiased;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+}
+
+/* TODO(bloque-5): clases de componente para tappable areas (mín 44px) cuando hagamos los primitives Button/NavItem */

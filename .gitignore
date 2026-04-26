@@ -1,0 +1,49 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Editores e IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# macOS
+.DS_Store
+
+# Build output
+dist
+dist-ssr
+*.local
+*.tsbuildinfo
+
+# Claude Code (extensión IDE) — ajustes locales
+.claude/settings.local.json
+
+# Dependencias
+node_modules
+
+# vite-plugin-pwa (genera estos en dev y build)
+dev-dist
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Firebase CLI
+.firebase/
+.firebaserc.local
+
+# Windows
+Thumbs.db

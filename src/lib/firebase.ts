@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 /**
@@ -13,6 +13,9 @@ import { getStorage } from 'firebase/storage';
  * - Firebase Auth Web usa por defecto persistencia LOCAL (IndexedDB), por eso
  *   Leo no verá nunca un login después de la primera vez que Mikel se autentique
  *   en su dispositivo.
+ * - `experimentalAutoDetectLongPolling`: si WebChannel no está disponible o tiene
+ *   problemas (proxies, firewalls, navegación rápida en dev con Strict Mode), el
+ *   SDK cae a HTTP long-polling. Evita el bug "INTERNAL ASSERTION FAILED (b815)".
  */
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -25,10 +28,10 @@ const config = {
 
 export const app = initializeApp(config);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+});
 export const storage = getStorage(app);
 
 /** UID del único usuario autorizado (Mikel). Disponible para componentes que necesiten el doc users/{ADMIN_UID}. */
 export const ADMIN_UID = import.meta.env.VITE_ADMIN_UID;
-
-// TODO(fase-2): exponer helpers tipados de colección (usersDoc, animalsCol, sightingsCol) con converters

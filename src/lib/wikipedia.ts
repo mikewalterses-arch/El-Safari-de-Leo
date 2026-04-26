@@ -24,6 +24,8 @@ export interface WikiSummary {
   thumbnailUrl?: string;
   imageUrl?: string;
   wikipediaUrl: string;
+  /** Wikidata Q-id, usado para enriquecer con clase taxonómica. */
+  wikibaseItemQid?: string;
 }
 
 interface MediaWikiSearchPage {
@@ -47,6 +49,7 @@ interface RestSummaryResponse {
   thumbnail?: { source: string };
   originalimage?: { source: string };
   content_urls?: { desktop?: { page?: string } };
+  wikibase_item?: string;
 }
 
 export async function searchAnimals(
@@ -97,5 +100,6 @@ export async function fetchAnimalSummary(title: string): Promise<WikiSummary> {
     wikipediaUrl:
       data.content_urls?.desktop?.page ??
       `https://${WIKI_LANG}.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+    wikibaseItemQid: data.wikibase_item,
   };
 }

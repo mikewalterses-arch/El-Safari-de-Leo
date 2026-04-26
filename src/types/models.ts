@@ -21,13 +21,17 @@ export interface UserStats {
   achievements: string[];
 }
 
+/** Clase taxonómica derivada de Wikidata (P171 + P105=Q37517). */
+export interface TaxonomicClass {
+  /** Q-id de Wikidata, ej. "Q19159" para Mammalia */
+  qid: string;
+  /** Nombre localizado, ej. "Mamíferos" */
+  name: string;
+}
+
 /**
  * Cache de animales identificados. Cada vez que Leo identifica un animal vía
  * Wikipedia, lo guardamos aquí (idempotente). El doc id es `String(wikipediaPageId)`.
- *
- * El brief original tenía campos curados (funFactKid, habitat, size, diet, category).
- * En fase 2 simplificamos al subset que devuelve Wikipedia. Si en fase 6 se añade
- * curación manual, ampliar este modelo y añadir un editor en /perfil.
  */
 export interface Animal {
   commonName: string;
@@ -39,6 +43,10 @@ export interface Animal {
   imageUrl?: string;
   source: 'wikipedia' | 'manual';
   createdAt: Timestamp;
+  /** Clase taxonómica derivada de Wikidata. Opcional: puede no existir si Wikidata falló. */
+  taxonomicClass?: TaxonomicClass;
+  /** URL de archivo de audio (.ogg) de Wikimedia Commons si existe. */
+  soundUrl?: string;
 }
 
 /** Documento en `sightings/{sightingId}`. Cada avistamiento de Leo. */

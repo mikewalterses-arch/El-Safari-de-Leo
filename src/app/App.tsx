@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from '@/app/router';
 import { Onboarding } from '@/pages/Onboarding/Onboarding';
+import { AuthGate } from '@/features/auth/AuthGate';
 
 const ONBOARDING_KEY = 'safarideleo:onboardingCompleted';
 
@@ -21,5 +22,9 @@ export function App() {
     );
   }
 
-  return <RouterProvider router={router} />;
+  return (
+    <AuthGate>
+      <RouterProvider router={router} />
+    </AuthGate>
+  );
 }

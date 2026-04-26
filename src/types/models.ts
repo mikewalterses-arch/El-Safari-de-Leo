@@ -5,17 +5,7 @@ import type { Timestamp } from 'firebase/firestore';
  * Mantener sincronizado si cambian las shapes en Firestore.
  */
 
-export type AnimalCategory =
-  | 'marine'
-  | 'mammal'
-  | 'bird'
-  | 'reptile'
-  | 'amphibian'
-  | 'insect'
-  | 'fish'
-  | 'other';
-
-/** Documento en `users/{userId}`. userId == ADMIN_UID (Mikel). El perfil representa a Leo. */
+/** Documento en `users/{userId}`. userId == ADMIN_UID. El perfil representa a Leo. */
 export interface User {
   displayName: string;
   birthDate: Timestamp;
@@ -31,19 +21,24 @@ export interface UserStats {
   achievements: string[];
 }
 
-/** Documento en `animals/{animalId}`. Catálogo compartido (semilla + añadidos por usuario). */
+/**
+ * Cache de animales identificados. Cada vez que Leo identifica un animal vía
+ * Wikipedia, lo guardamos aquí (idempotente). El doc id es `String(wikipediaPageId)`.
+ *
+ * El brief original tenía campos curados (funFactKid, habitat, size, diet, category).
+ * En fase 2 simplificamos al subset que devuelve Wikipedia. Si en fase 6 se añade
+ * curación manual, ampliar este modelo y añadir un editor en /perfil.
+ */
 export interface Animal {
   commonName: string;
-  scientificName: string;
-  category: AnimalCategory;
-  subcategory: string;
-  funFactKid: string;
-  habitat: string;
-  size: string;
-  diet: string;
-  illustration: string;
-  source: 'seed' | 'user-added';
-  searchTerms: string[];
+  scientificName?: string;
+  wikipediaUrl: string;
+  wikipediaPageId: number;
+  description: string;
+  thumbnailUrl?: string;
+  imageUrl?: string;
+  source: 'wikipedia' | 'manual';
+  createdAt: Timestamp;
 }
 
 /** Documento en `sightings/{sightingId}`. Cada avistamiento de Leo. */
@@ -54,7 +49,7 @@ export interface Sighting {
   location: SightingLocation;
   notes: string;
   identificationMethod: 'manual';
-  // TODO(post-fase-1): si se añade IA, ampliar union: 'manual' | 'ai-suggested' | 'ai-confirmed'
+  // TODO(post-fase-2): si añadimos otra fuente (IA/Wikidata estructurado), ampliar union
   createdAt: Timestamp;
   isFirstDiscovery: boolean;
 }

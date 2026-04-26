@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { useAnimals } from '@/features/animals/useAnimals';
 import { useSightings } from '@/features/sightings/useSightings';
+import { AchievementsSection } from '@/features/achievements/AchievementsSection';
 import {
   LOCALE_NAMES,
   SUPPORTED_LOCALES,
@@ -18,10 +19,10 @@ import {
 import { cn } from '@/lib/cn';
 
 const CHART_COLORS = [
-  '#7DD3C7', // turquesa
-  '#FF9B85', // coral
-  '#FFE5A0', // amarillo crema
-  '#B8E0A0', // verde lima
+  '#7DD3C7',
+  '#FF9B85',
+  '#FFE5A0',
+  '#B8E0A0',
   '#9CC0BD',
   '#D9A28A',
   '#A0B8E0',
@@ -99,6 +100,8 @@ export function Profile() {
           </div>
         )}
       </section>
+
+      <AchievementsSection />
 
       <LanguageSection />
     </div>

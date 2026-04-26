@@ -5,6 +5,7 @@ import { PhotoCaptureStep } from './PhotoCaptureStep';
 import { IdentifyStep } from './IdentifyStep';
 import { ConfirmStep } from './ConfirmStep';
 import { createSighting } from './createSighting';
+import { DiscoveryCelebration } from './DiscoveryCelebration';
 import { ensureAnimal } from '@/features/animals/cacheAnimal';
 import { useAuth } from '@/features/auth/useAuth';
 import { getCurrentLocation } from '@/lib/geolocation';
@@ -26,6 +27,7 @@ export function NewSightingFlow() {
   const [location, setLocation] = useState<SightingLocation | null>(null);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isFirstDiscovery, setIsFirstDiscovery] = useState(false);
 
   // GPS en background mientras Leo identifica.
   useEffect(() => {
@@ -59,15 +61,15 @@ export function NewSightingFlow() {
     setStep('saving');
     setError(null);
     try {
-      await createSighting({
+      const result = await createSighting({
         uid: user.uid,
         animalId,
         photo,
         location,
         notes,
       });
-      // Vibración táctil corta al guardar (móviles que la soporten).
       navigator.vibrate?.([60, 30, 60]);
+      setIsFirstDiscovery(result.isFirstDiscovery);
       setStep('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar');
@@ -75,13 +77,14 @@ export function NewSightingFlow() {
     }
   };
 
-  // Tras "done" llevamos a Leo al diario.
-  // TODO(fase-5): aquí va la animación de descubrimiento si isFirstDiscovery.
+  // Tras "done": si es descubrimiento nuevo, dejamos la celebración 2.5s;
+  // si es repetición, 1.2s y a otra cosa.
   useEffect(() => {
     if (step !== 'done') return;
-    const handle = setTimeout(() => navigate('/diario'), 1500);
+    const delay = isFirstDiscovery ? 2500 : 1200;
+    const handle = setTimeout(() => navigate('/diario'), delay);
     return () => clearTimeout(handle);
-  }, [step, navigate]);
+  }, [step, navigate, isFirstDiscovery]);
 
   if (step === 'photo') {
     return <PhotoCaptureStep onPhotoSelected={onPhotoSelected} />;
@@ -93,7 +96,11 @@ export function NewSightingFlow() {
     return <FlowStateMessage label={t('newSighting.saving')} spinning />;
   }
   if (step === 'done') {
-    return <FlowStateMessage label={t('newSighting.saved')} success />;
+    return isFirstDiscovery && animal ? (
+      <DiscoveryCelebration animalName={animal.title} />
+    ) : (
+      <FlowStateMessage label={t('newSighting.saved')} success />
+    );
   }
 
   if (animal && photo) {

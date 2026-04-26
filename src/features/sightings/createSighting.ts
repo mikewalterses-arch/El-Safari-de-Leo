@@ -25,19 +25,29 @@ interface CreateSightingInput {
   notes: string;
 }
 
+export interface CreateSightingResult {
+  id: string;
+  isFirstDiscovery: boolean;
+}
+
 const EMPTY_LOCATION: SightingLocation = { lat: 0, lng: 0, placeName: '' };
 
 /**
- * Crea un avistamiento end-to-end:
- * 1. Comprime la foto y genera thumbnail.
- * 2. Crea el doc en `sightings/{auto}` con URLs vacíos (sirve para tener el sightingId).
- * 3. Sube original y thumbnail a Storage en `sightings/{uid}/{sightingId}/{photo,thumb}.jpg`.
- * 4. Actualiza el doc con las URLs descargables.
+ * Crea un avistamiento end-to-end. Devuelve el id y si es primer avistamiento de
+ * ese animalId, para que el caller pueda lanzar la animación de descubrimiento.
  *
- * TODO(fase-2-final): incrementar `users/{uid}.stats.totalSightings` y, si isFirstDiscovery,
- * `uniqueAnimals` (transacción Firestore).
+ * 1. Comprueba si es primer avistamiento del animal.
+ * 2. Comprime la foto y genera thumbnail en paralelo.
+ * 3. Crea el doc en `sightings/{auto}` con URLs vacíos.
+ * 4. Sube original y thumbnail a Storage en `sightings/{uid}/{sightingId}/`.
+ * 5. Actualiza el doc con las URLs descargables.
+ *
+ * TODO(post-fase-5): incrementar `users/{uid}.stats.totalSightings` y, si
+ * isFirstDiscovery, `uniqueAnimals` (transacción Firestore).
  */
-export async function createSighting(input: CreateSightingInput): Promise<string> {
+export async function createSighting(
+  input: CreateSightingInput,
+): Promise<CreateSightingResult> {
   const isFirstDiscovery = await checkFirstDiscovery(input.animalId);
   const { original, thumbnail } = await processPhoto(input.photo);
 
@@ -65,7 +75,7 @@ export async function createSighting(input: CreateSightingInput): Promise<string
   ]);
 
   await updateDoc(docRef, { photoUrl, thumbnailUrl });
-  return docRef.id;
+  return { id: docRef.id, isFirstDiscovery };
 }
 
 async function checkFirstDiscovery(animalId: string): Promise<boolean> {

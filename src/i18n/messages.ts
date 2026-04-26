@@ -98,6 +98,30 @@ const es: Messages = {
   'profile.taxonomyTitle': 'Tus tipos de animales',
   'profile.taxonomyEmpty': 'Cuando hagas avistamientos, aquí verás un gráfico con los tipos de animales que has visto (mamíferos, aves, reptiles...).',
   'profile.languageTitle': 'Idioma',
+  'profile.achievementsTitle': 'Logros',
+
+  // Descubrimiento
+  'discovery.title': '¡Nuevo descubrimiento!',
+
+  // Logros
+  'ach.firstAnimal.title': '¡Primer animal!',
+  'ach.firstAnimal.desc': 'Tu primer avistamiento.',
+  'ach.threeAnimals.title': 'Tres avistamientos',
+  'ach.threeAnimals.desc': 'Has visto 3 animales.',
+  'ach.tenAnimals.title': '¡Decena!',
+  'ach.tenAnimals.desc': '10 animales avistados.',
+  'ach.twentyfive.title': 'Veinticinco',
+  'ach.twentyfive.desc': '25 animales avistados.',
+  'ach.threeUnique.title': 'Variedad',
+  'ach.threeUnique.desc': '3 animales distintos.',
+  'ach.tenUnique.title': 'Coleccionista',
+  'ach.tenUnique.desc': '10 animales distintos.',
+  'ach.threePlaces.title': 'Aventurero',
+  'ach.threePlaces.desc': 'Animales en 3 lugares.',
+  'ach.fiveClasses.title': 'Naturalista',
+  'ach.fiveClasses.desc': '5 tipos distintos.',
+  'ach.sevenDays.title': 'Semana de safari',
+  'ach.sevenDays.desc': '7 días distintos.',
 };
 
 const eu: Messages = {
@@ -179,6 +203,30 @@ const eu: Messages = {
   'profile.taxonomyTitle': 'Zure animalia motak',
   'profile.taxonomyEmpty': 'Behaketak egiten dituzunean, hemen ikusiko duzu zer animalia mota ikusi dituzun (ugaztunak, hegaztiak, narrastiak...).',
   'profile.languageTitle': 'Hizkuntza',
+  'profile.achievementsTitle': 'Lorpenak',
+
+  // Aurkikuntza
+  'discovery.title': 'Aurkikuntza berria!',
+
+  // Lorpenak
+  'ach.firstAnimal.title': 'Lehen animalia!',
+  'ach.firstAnimal.desc': 'Zure lehen behaketa.',
+  'ach.threeAnimals.title': 'Hiru behaketa',
+  'ach.threeAnimals.desc': '3 animalia ikusi dituzu.',
+  'ach.tenAnimals.title': 'Hamar!',
+  'ach.tenAnimals.desc': '10 animalia ikusi dituzu.',
+  'ach.twentyfive.title': 'Hogeita bost',
+  'ach.twentyfive.desc': '25 animalia ikusi dituzu.',
+  'ach.threeUnique.title': 'Aniztasuna',
+  'ach.threeUnique.desc': '3 animalia desberdin.',
+  'ach.tenUnique.title': 'Bildumaria',
+  'ach.tenUnique.desc': '10 animalia desberdin.',
+  'ach.threePlaces.title': 'Abenturazalea',
+  'ach.threePlaces.desc': 'Animaliak 3 lekutan.',
+  'ach.fiveClasses.title': 'Naturalista',
+  'ach.fiveClasses.desc': '5 mota desberdin.',
+  'ach.sevenDays.title': 'Safari astea',
+  'ach.sevenDays.desc': '7 egun desberdinetan.',
 };
 
 export const MESSAGES: Record<Locale, Messages> = { es, eu };

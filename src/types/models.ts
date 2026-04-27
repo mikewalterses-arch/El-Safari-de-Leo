@@ -21,19 +21,11 @@ export interface UserStats {
   achievements: string[];
 }
 
-/** Clase taxonómica derivada de Wikidata o del iconic taxon de iNaturalist. */
 export interface TaxonomicClass {
-  /** Q-id de Wikidata si viene de allí, '' si viene de iNaturalist */
   qid: string;
-  /** Nombre localizado, ej. "Mamíferos" */
   name: string;
 }
 
-/**
- * Cache de animales identificados. El doc id es:
- * - `inat_{taxonId}` para resultados de iNaturalist (la fuente principal de búsqueda).
- * - `{lang}_{wikipediaPageId}` para entradas legacy creadas con búsqueda Wikipedia directa.
- */
 export interface Animal {
   commonName: string;
   scientificName?: string;
@@ -48,7 +40,24 @@ export interface Animal {
   soundUrl?: string;
 }
 
-/** Documento en `sightings/{sightingId}`. Cada avistamiento de Leo. */
+/** Atributos opcionales que Leo añade en el paso de confirmación. */
+export type SightingSize = 'small' | 'medium' | 'large';
+export type SightingActivity =
+  | 'sleeping'
+  | 'eating'
+  | 'drinking'
+  | 'flying'
+  | 'swimming'
+  | 'hiding'
+  | 'playing'
+  | 'walking';
+
+export interface SightingAttributes {
+  size?: SightingSize;
+  color?: string;
+  activity?: SightingActivity;
+}
+
 export interface Sighting {
   animalId: string;
   photoUrl: string;
@@ -58,6 +67,7 @@ export interface Sighting {
   identificationMethod: 'manual';
   createdAt: Timestamp;
   isFirstDiscovery: boolean;
+  attributes?: SightingAttributes;
 }
 
 export interface SightingLocation {
@@ -66,23 +76,19 @@ export interface SightingLocation {
   placeName: string;
 }
 
-/**
- * Resultado de búsqueda de animal (mostrado en la lista de sugerencias).
- * Independiente de la fuente: iNaturalist es la principal, Wikipedia se usa
- * solo para enriquecer al cachear.
- */
+/** Documento en `notes/{noteId}`. Diario libre, notas sin foto. */
+export interface JournalNote {
+  text: string;
+  createdAt: Timestamp;
+}
+
 export interface AnimalSearchResult {
-  /** Id estable en su fuente (taxonId de iNat, pageId de Wikipedia) */
   sourceId: number;
   source: 'inaturalist' | 'wikipedia';
-  /** Nombre que se muestra en la lista (común si existe, científico si no) */
   title: string;
   scientificName?: string;
-  /** Texto corto mostrado bajo el título en la lista */
   description?: string;
   thumbnailUrl?: string;
-  /** URL del artículo de Wikipedia en el idioma actual, si la conocemos */
   wikipediaUrl?: string;
-  /** Iconic taxon en inglés que reporta iNat (Mammalia, Aves, ...) */
   iconicTaxon?: string;
 }

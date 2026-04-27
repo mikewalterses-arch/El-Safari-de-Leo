@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Check, MapPin } from 'lucide-react';
 import { useT } from '@/i18n';
-import type { AnimalSearchResult, SightingLocation } from '@/types/models';
+import { AttributesPicker } from './AttributesPicker';
+import type {
+  AnimalSearchResult,
+  SightingAttributes,
+  SightingLocation,
+} from '@/types/models';
 
 interface ConfirmStepProps {
   photo: File;
   animal: AnimalSearchResult;
   location: SightingLocation | null;
   notes: string;
+  attributes: SightingAttributes;
   onNotesChange: (value: string) => void;
+  onAttributesChange: (value: SightingAttributes) => void;
   onSave: () => void;
   onBack: () => void;
   error: string | null;
@@ -19,7 +26,9 @@ export function ConfirmStep({
   animal,
   location,
   notes,
+  attributes,
   onNotesChange,
+  onAttributesChange,
   onSave,
   onBack,
   error,
@@ -74,6 +83,8 @@ export function ConfirmStep({
               : t('newSighting.noLocation')}
         </p>
       </div>
+
+      <AttributesPicker value={attributes} onChange={onAttributesChange} />
 
       <label className="block">
         <span className="text-xs font-extrabold uppercase tracking-wide text-foreground/60">

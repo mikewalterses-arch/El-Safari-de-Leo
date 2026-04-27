@@ -15,7 +15,7 @@ import {
 } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { processPhoto } from './compressImage';
-import type { SightingLocation } from '@/types/models';
+import type { SightingAttributes, SightingLocation } from '@/types/models';
 
 interface CreateSightingInput {
   uid: string;
@@ -23,6 +23,7 @@ interface CreateSightingInput {
   photo: File;
   location: SightingLocation | null;
   notes: string;
+  attributes?: SightingAttributes;
 }
 
 export interface CreateSightingResult {
@@ -32,26 +33,13 @@ export interface CreateSightingResult {
 
 const EMPTY_LOCATION: SightingLocation = { lat: 0, lng: 0, placeName: '' };
 
-/**
- * Crea un avistamiento end-to-end. Devuelve el id y si es primer avistamiento de
- * ese animalId, para que el caller pueda lanzar la animación de descubrimiento.
- *
- * 1. Comprueba si es primer avistamiento del animal.
- * 2. Comprime la foto y genera thumbnail en paralelo.
- * 3. Crea el doc en `sightings/{auto}` con URLs vacíos.
- * 4. Sube original y thumbnail a Storage en `sightings/{uid}/{sightingId}/`.
- * 5. Actualiza el doc con las URLs descargables.
- *
- * TODO(post-fase-5): incrementar `users/{uid}.stats.totalSightings` y, si
- * isFirstDiscovery, `uniqueAnimals` (transacción Firestore).
- */
 export async function createSighting(
   input: CreateSightingInput,
 ): Promise<CreateSightingResult> {
   const isFirstDiscovery = await checkFirstDiscovery(input.animalId);
   const { original, thumbnail } = await processPhoto(input.photo);
 
-  const docRef = await addDoc(collection(db, 'sightings'), {
+  const docData: Record<string, unknown> = {
     animalId: input.animalId,
     photoUrl: '',
     thumbnailUrl: '',
@@ -60,7 +48,12 @@ export async function createSighting(
     identificationMethod: 'manual',
     createdAt: Timestamp.now(),
     isFirstDiscovery,
-  });
+  };
+  if (input.attributes && hasAttributes(input.attributes)) {
+    docData.attributes = input.attributes;
+  }
+
+  const docRef = await addDoc(collection(db, 'sightings'), docData);
 
   const photoPath = `sightings/${input.uid}/${docRef.id}/photo.jpg`;
   const thumbPath = `sightings/${input.uid}/${docRef.id}/thumb.jpg`;
@@ -76,6 +69,10 @@ export async function createSighting(
 
   await updateDoc(docRef, { photoUrl, thumbnailUrl });
   return { id: docRef.id, isFirstDiscovery };
+}
+
+function hasAttributes(a: SightingAttributes): boolean {
+  return Boolean(a.size || a.color || a.activity);
 }
 
 async function checkFirstDiscovery(animalId: string): Promise<boolean> {

@@ -88,9 +88,14 @@ const es: Messages = {
 
   // Diario
   'diary.title': 'Diario',
-  'diary.empty': 'Aquí verás todas tus aventuras en orden. ¡Empieza haciendo un avistamiento!',
+  'diary.empty': 'Aquí verás todas tus aventuras en orden. ¡Empieza haciendo un avistamiento o escribiendo una nota!',
   'diary.count.one': 'Tu 1 aventura',
   'diary.count.other': 'Tus {count} aventuras',
+  'diary.writeNote': 'Escribir',
+  'diary.notePlaceholder': 'Lo que quieras contar...',
+  'diary.noteSave': 'Guardar nota',
+  'diary.noteCancel': 'Cancelar',
+  'diary.noteLabel': 'Nota libre',
 
   // Detalle de animal
   'animal.notFound': 'No encontré este animal.',
@@ -99,6 +104,8 @@ const es: Messages = {
   'animal.wikipedia': 'Saber más en Wikipedia',
   'animal.timesSeen.one': 'Lo has visto 1 vez',
   'animal.timesSeen.other': 'Lo has visto {count} veces',
+  'animal.changePhoto': 'Cambiar foto',
+  'animal.uploading': 'Subiendo...',
 
   // Perfil
   'profile.title': 'Perfil',
@@ -143,6 +150,35 @@ const es: Messages = {
   'needsPapa.cta': 'Soy papá',
   'profile.changeUser': 'Cambiar de usuario',
   'supervision.banner': 'Recuerda: usa esto con papá',
+
+  // Atributos del avistamiento (modo compañero)
+  'attr.sizeLabel': '¿Tamaño?',
+  'attr.colorLabel': '¿De qué color?',
+  'attr.activityLabel': '¿Qué hacía?',
+  'attr.size.small': 'Pequeño',
+  'attr.size.medium': 'Mediano',
+  'attr.size.large': 'Grande',
+  'attr.color.white': 'Blanco',
+  'attr.color.black': 'Negro',
+  'attr.color.brown': 'Marrón',
+  'attr.color.gray': 'Gris',
+  'attr.color.yellow': 'Amarillo',
+  'attr.color.orange': 'Naranja',
+  'attr.color.red': 'Rojo',
+  'attr.color.green': 'Verde',
+  'attr.activity.sleeping': 'Durmiendo',
+  'attr.activity.eating': 'Comiendo',
+  'attr.activity.drinking': 'Bebiendo',
+  'attr.activity.flying': 'Volando',
+  'attr.activity.swimming': 'Nadando',
+  'attr.activity.hiding': 'Escondido',
+  'attr.activity.playing': 'Jugando',
+  'attr.activity.walking': 'Andando',
+
+  // Reto semanal
+  'challenge.weekly': 'Reto de la semana',
+  'challenge.prompt': '¿Puedes encontrar un {className}?',
+  'challenge.completed': '¡Reto conseguido! Encontraste {className}',
 };
 
 const eu: Messages = {
@@ -214,9 +250,14 @@ const eu: Messages = {
 
   // Egunerokoa
   'diary.title': 'Egunerokoa',
-  'diary.empty': 'Hemen abentura guztiak ordenan ikusiko dituzu. Hasi behaketa bat eginez!',
+  'diary.empty': 'Hemen abentura guztiak ordenan ikusiko dituzu. Hasi behaketa bat egin edo ohar bat idatziz!',
   'diary.count.one': 'Zure abentura 1',
   'diary.count.other': 'Zure {count} abenturak',
+  'diary.writeNote': 'Idatzi',
+  'diary.notePlaceholder': 'Kontatu nahi duzuna...',
+  'diary.noteSave': 'Gorde oharra',
+  'diary.noteCancel': 'Utzi',
+  'diary.noteLabel': 'Ohar librea',
 
   // Animalia xehetasuna
   'animal.notFound': 'Ez dut aurkitu animalia hau.',
@@ -225,6 +266,8 @@ const eu: Messages = {
   'animal.wikipedia': 'Gehiago jakin Wikipedian',
   'animal.timesSeen.one': 'Behin ikusi duzu',
   'animal.timesSeen.other': '{count} aldiz ikusi duzu',
+  'animal.changePhoto': 'Argazkia aldatu',
+  'animal.uploading': 'Igotzen...',
 
   // Profila
   'profile.title': 'Profila',
@@ -269,6 +312,35 @@ const eu: Messages = {
   'needsPapa.cta': 'Aita naiz',
   'profile.changeUser': 'Erabiltzailez aldatu',
   'supervision.banner': 'Gogoratu: aitarekin erabili hau',
+
+  // Behaketaren ezaugarriak (lagun modua)
+  'attr.sizeLabel': 'Tamaina?',
+  'attr.colorLabel': 'Zer kolore?',
+  'attr.activityLabel': 'Zer egiten zuen?',
+  'attr.size.small': 'Txikia',
+  'attr.size.medium': 'Ertaina',
+  'attr.size.large': 'Handia',
+  'attr.color.white': 'Zuria',
+  'attr.color.black': 'Beltza',
+  'attr.color.brown': 'Marroia',
+  'attr.color.gray': 'Grisa',
+  'attr.color.yellow': 'Horia',
+  'attr.color.orange': 'Laranja',
+  'attr.color.red': 'Gorria',
+  'attr.color.green': 'Berdea',
+  'attr.activity.sleeping': 'Lo egiten',
+  'attr.activity.eating': 'Jaten',
+  'attr.activity.drinking': 'Edaten',
+  'attr.activity.flying': 'Hegan',
+  'attr.activity.swimming': 'Igeri',
+  'attr.activity.hiding': 'Ezkutatuta',
+  'attr.activity.playing': 'Jolasten',
+  'attr.activity.walking': 'Ibiltzen',
+
+  // Asteko erronka
+  'challenge.weekly': 'Asteko erronka',
+  'challenge.prompt': '{className} bat aurki dezakezu?',
+  'challenge.completed': 'Erronka lortuta! {className} aurkitu duzu',
 };
 
 export const MESSAGES: Record<Locale, Messages> = { es, eu };

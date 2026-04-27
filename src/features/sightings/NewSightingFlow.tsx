@@ -10,7 +10,11 @@ import { ensureAnimal } from '@/features/animals/cacheAnimal';
 import { useAuth } from '@/features/auth/useAuth';
 import { getCurrentLocation } from '@/lib/geolocation';
 import { useT } from '@/i18n';
-import type { AnimalSearchResult, SightingLocation } from '@/types/models';
+import type {
+  AnimalSearchResult,
+  SightingAttributes,
+  SightingLocation,
+} from '@/types/models';
 
 type Step = 'photo' | 'identify' | 'caching' | 'confirm' | 'saving' | 'done';
 
@@ -25,17 +29,15 @@ export function NewSightingFlow() {
   const [animalId, setAnimalId] = useState<string | null>(null);
   const [location, setLocation] = useState<SightingLocation | null>(null);
   const [notes, setNotes] = useState('');
+  const [attributes, setAttributes] = useState<SightingAttributes>({});
   const [error, setError] = useState<string | null>(null);
   const [isFirstDiscovery, setIsFirstDiscovery] = useState(false);
 
-  // GPS en background mientras Leo identifica.
   useEffect(() => {
     if (!photo || location) return;
     getCurrentLocation()
       .then(setLocation)
-      .catch(() => {
-        /* sin GPS: guardamos sin location */
-      });
+      .catch(() => {});
   }, [photo, location]);
 
   const onPhotoSelected = (file: File) => {
@@ -68,6 +70,7 @@ export function NewSightingFlow() {
         photo,
         location,
         notes,
+        attributes,
       });
       navigator.vibrate?.([60, 30, 60]);
       setIsFirstDiscovery(result.isFirstDiscovery);
@@ -112,7 +115,9 @@ export function NewSightingFlow() {
         animal={animal}
         location={location}
         notes={notes}
+        attributes={attributes}
         onNotesChange={setNotes}
+        onAttributesChange={setAttributes}
         onSave={onSave}
         onBack={() => setStep('identify')}
         error={error}

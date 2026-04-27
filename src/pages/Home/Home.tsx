@@ -8,6 +8,7 @@ import {
   computeStreak,
   computeWeeklyStats,
 } from '@/features/sightings/stats';
+import { ChallengeCard } from '@/features/challenges/ChallengeCard';
 import { useLocaleStore, useT } from '@/i18n';
 
 const CACHE_KEY = 'safarideleo:nearbyCache';
@@ -38,7 +39,7 @@ function writeCache(c: NearbyCache) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(c));
   } catch {
-    /* localStorage lleno o deshabilitado: no es crítico */
+    /* no es crítico */
   }
 }
 
@@ -55,6 +56,7 @@ export function Home() {
     <div className="space-y-6">
       <Greeting />
       <NewPlaceBanner />
+      <ChallengeCard />
       <StatsCard />
       <NearbyAnimals />
     </div>
@@ -71,10 +73,6 @@ function Greeting() {
   );
 }
 
-/**
- * Modo aventura: cuando Leo está a más de 5 km de cualquier avistamiento previo,
- * aparece un banner animado celebrando que está en sitio nuevo.
- */
 function NewPlaceBanner() {
   const t = useT();
   const { sightings } = useSightings();
@@ -99,9 +97,7 @@ function NewPlaceBanner() {
         );
         setIsNewPlace(minDist > NEW_PLACE_THRESHOLD_KM);
       },
-      () => {
-        /* Permiso denegado: ocultamos banner */
-      },
+      () => {},
       { timeout: 10_000, maximumAge: 60_000 },
     );
 
@@ -134,10 +130,6 @@ function NewPlaceBanner() {
   );
 }
 
-/**
- * Tarjeta de hábito: días seguidos + resumen semanal. Solo aparece si hay
- * algo interesante que decir (racha ≥ 2 o avistamientos en últimos 7 días).
- */
 function StatsCard() {
   const t = useT();
   const { sightings } = useSightings();

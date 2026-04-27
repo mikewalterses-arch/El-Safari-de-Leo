@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Check, MapPin } from 'lucide-react';
 import { useT } from '@/i18n';
-import type { WikiSearchResult } from '@/lib/wikipedia';
-import type { SightingLocation } from '@/types/models';
+import type { AnimalSearchResult, SightingLocation } from '@/types/models';
 
 interface ConfirmStepProps {
   photo: File;
-  animal: WikiSearchResult;
+  animal: AnimalSearchResult;
   location: SightingLocation | null;
   notes: string;
   onNotesChange: (value: string) => void;
@@ -56,6 +55,11 @@ export function ConfirmStep({
           {t('newSighting.animal')}
         </p>
         <p className="mt-1 text-lg font-extrabold">{animal.title}</p>
+        {animal.scientificName && animal.scientificName !== animal.title && (
+          <p className="text-sm italic text-foreground/60">
+            {animal.scientificName}
+          </p>
+        )}
       </div>
 
       <div className="rounded-card border border-foreground/10 bg-cream p-4">

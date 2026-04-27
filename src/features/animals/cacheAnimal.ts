@@ -1,52 +1,121 @@
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { fetchAnimalSummary, type WikiSearchResult } from '@/lib/wikipedia';
+import {
+  extractWikipediaTitle,
+  fetchAnimalSummary,
+  type WikiSummary,
+} from '@/lib/wikipedia';
 import { fetchTaxonomicClass } from '@/lib/wikidata';
 import { fetchAnimalSound } from '@/lib/wikimedia';
-import { getLocale } from '@/i18n';
-import type { Animal } from '@/types/models';
+import { getLocale, type Locale } from '@/i18n';
+import type { Animal, AnimalSearchResult, TaxonomicClass } from '@/types/models';
+
+const ENRICH_TIMEOUT_MS = 4000;
 
 /**
- * Asegura que el animal exista en `animals/{lang}_{wikipediaPageId}` (cache).
- * El doc id incluye el locale para que un animal cacheado en castellano y otro
- * en euskera no choquen — son entradas distintas (mismo animal, distinta lengua
- * y posiblemente distinto pageId también).
+ * Cachea un animal en `animals/{id}` y devuelve el id usado.
+ * El id depende de la fuente:
+ * - `inat_{taxonId}` si viene de iNaturalist (caso normal en fase 4+).
+ * - `{lang}_{wikipediaPageId}` si viene de Wikipedia (entradas legacy).
  *
- * Si ya está cacheado, devuelve el id sin tocar la red.
- * Si no, hace fetch del summary, enriquece con clase taxonómica (Wikidata) y
- * sonido (Wikimedia) en paralelo, y crea el doc.
+ * Idempotente: si ya está cacheado, no toca la red.
  *
- * Los enriquecimientos son no bloqueantes: si fallan, el animal se cachea con
- * los campos opcionales ausentes.
+ * Si hay wikipediaUrl, se usa Wikipedia para enriquecer con descripción
+ * rica + imagen + sonido + clase taxonómica (Wikidata). Estos pasos están
+ * limitados con timeout de 4 s para no bloquear al usuario si el SPARQL
+ * está lento.
  */
-export async function ensureAnimal(result: WikiSearchResult): Promise<string> {
+export async function ensureAnimal(result: AnimalSearchResult): Promise<string> {
   const lang = getLocale();
-  const animalId = `${lang}_${result.pageId}`;
+  const animalId =
+    result.source === 'inaturalist'
+      ? `inat_${result.sourceId}`
+      : `${lang}_${result.sourceId}`;
+
   const ref = doc(db, 'animals', animalId);
   const existing = await getDoc(ref);
   if (existing.exists()) return animalId;
 
-  const summary = await fetchAnimalSummary(result.title, lang);
+  // Si tenemos una URL de Wikipedia, intentamos descripción rica.
+  let summary: WikiSummary | null = null;
+  if (result.wikipediaUrl) {
+    const title = extractWikipediaTitle(result.wikipediaUrl);
+    if (title) {
+      summary = await fetchAnimalSummary(title, lang).catch(() => null);
+    }
+  }
 
-  const [taxClass, soundUrl] = await Promise.all([
-    summary.wikibaseItemQid
-      ? fetchTaxonomicClass(summary.wikibaseItemQid, lang).catch(() => null)
+  // Enriquecimiento opcional con timeout.
+  const [taxClassFromWikidata, soundUrl] = await Promise.all([
+    summary?.wikibaseItemQid
+      ? withTimeout(
+          fetchTaxonomicClass(summary.wikibaseItemQid, lang).catch(() => null),
+          ENRICH_TIMEOUT_MS,
+          null,
+        )
       : Promise.resolve(null),
-    fetchAnimalSound(summary.title, lang).catch(() => undefined),
+    summary
+      ? withTimeout(
+          fetchAnimalSound(summary.title, lang).catch(() => undefined),
+          ENRICH_TIMEOUT_MS,
+          undefined,
+        )
+      : Promise.resolve(undefined),
   ]);
 
+  // Fallback de clase taxonómica: el iconicTaxon de iNat ya nos dice si es
+  // mamífero, ave, etc, sin necesidad de SPARQL.
+  const taxClass: TaxonomicClass | undefined =
+    taxClassFromWikidata ??
+    (result.iconicTaxon
+      ? {
+          qid: '',
+          name: localizeIconicTaxon(result.iconicTaxon, lang),
+        }
+      : undefined);
+
+  const finalThumb = summary?.thumbnailUrl ?? result.thumbnailUrl;
+  const finalDescription =
+    summary?.description ||
+    [result.title, result.scientificName].filter(Boolean).join(' — ') ||
+    result.title;
+
   const animal: Animal = {
-    commonName: summary.title,
-    wikipediaUrl: summary.wikipediaUrl,
-    wikipediaPageId: summary.pageId,
-    description: summary.description,
-    source: 'wikipedia',
+    commonName: summary?.title ?? result.title,
+    description: finalDescription,
+    wikipediaUrl: summary?.wikipediaUrl ?? result.wikipediaUrl ?? '',
+    wikipediaPageId: summary?.pageId ?? 0,
+    source: result.source,
     createdAt: Timestamp.now(),
-    ...(summary.thumbnailUrl && { thumbnailUrl: summary.thumbnailUrl }),
-    ...(summary.imageUrl && { imageUrl: summary.imageUrl }),
+    ...(result.scientificName && { scientificName: result.scientificName }),
+    ...(finalThumb && { thumbnailUrl: finalThumb }),
+    ...(summary?.imageUrl && { imageUrl: summary.imageUrl }),
     ...(taxClass && { taxonomicClass: taxClass }),
     ...(soundUrl && { soundUrl }),
   };
   await setDoc(ref, animal);
   return animalId;
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
+const ICONIC_LABELS: Record<string, Record<Locale, string>> = {
+  Mammalia: { es: 'Mamíferos', eu: 'Ugaztunak' },
+  Aves: { es: 'Aves', eu: 'Hegaztiak' },
+  Reptilia: { es: 'Reptiles', eu: 'Narrastiak' },
+  Amphibia: { es: 'Anfibios', eu: 'Anfibioak' },
+  Actinopterygii: { es: 'Peces', eu: 'Arrainak' },
+  Insecta: { es: 'Insectos', eu: 'Intsektuak' },
+  Arachnida: { es: 'Arácnidos', eu: 'Armiarmak' },
+  Mollusca: { es: 'Moluscos', eu: 'Moluskuak' },
+  Animalia: { es: 'Animales', eu: 'Animaliak' },
+};
+
+function localizeIconicTaxon(name: string, lang: Locale): string {
+  return ICONIC_LABELS[name]?.[lang] ?? name;
 }

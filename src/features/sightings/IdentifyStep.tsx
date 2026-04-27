@@ -1,9 +1,9 @@
 import { AnimalSearch } from '@/features/animals/AnimalSearch';
 import { useT } from '@/i18n';
-import type { WikiSearchResult } from '@/lib/wikipedia';
+import type { AnimalSearchResult } from '@/types/models';
 
 interface IdentifyStepProps {
-  onAnimalSelected: (result: WikiSearchResult) => void;
+  onAnimalSelected: (result: AnimalSearchResult) => void;
 }
 
 export function IdentifyStep({ onAnimalSelected }: IdentifyStepProps) {

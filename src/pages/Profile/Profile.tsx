@@ -10,6 +10,7 @@ import {
 import { useAnimals } from '@/features/animals/useAnimals';
 import { useSightings } from '@/features/sightings/useSightings';
 import { AchievementsSection } from '@/features/achievements/AchievementsSection';
+import { useUserTypeStore } from '@/features/auth/userType';
 import {
   LOCALE_NAMES,
   SUPPORTED_LOCALES,
@@ -104,7 +105,23 @@ export function Profile() {
       <AchievementsSection />
 
       <LanguageSection />
+
+      <ChangeUserSection />
     </div>
+  );
+}
+
+function ChangeUserSection() {
+  const t = useT();
+  const clearUserType = useUserTypeStore((s) => s.clear);
+  return (
+    <button
+      type="button"
+      onClick={clearUserType}
+      className="w-full rounded-button border border-foreground/15 bg-cream py-3 text-sm font-semibold text-foreground/70 transition-colors hover:border-primary"
+    >
+      {t('profile.changeUser')}
+    </button>
   );
 }
 

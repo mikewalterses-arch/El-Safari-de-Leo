@@ -58,6 +58,8 @@ const es: Messages = {
   'newSighting.searchPlaceholder': 'Escribe el nombre...',
   'newSighting.searching': 'Buscando...',
   'newSighting.searchError': 'No se pudo buscar. ¿Hay internet?',
+  'newSighting.noResults': 'No encuentro ningún animal con ese nombre. Prueba con otra palabra.',
+  'newSighting.caching': 'Buscando información del animal...',
   'newSighting.confirmTitle': '¡Casi! ¿Algo más?',
   'newSighting.confirmSubtitle': 'Revisa los datos y guarda tu avistamiento.',
   'newSighting.animal': 'Animal',
@@ -122,6 +124,16 @@ const es: Messages = {
   'ach.fiveClasses.desc': '5 tipos distintos.',
   'ach.sevenDays.title': 'Semana de safari',
   'ach.sevenDays.desc': '7 días distintos.',
+
+  // Quién eres
+  'whoAreYou.title': '¿Quién eres?',
+  'whoAreYou.subtitle': 'Pulsa para entrar.',
+  'whoAreYou.leo': 'Soy Leo',
+  'whoAreYou.papa': 'Soy papá',
+  'needsPapa.title': 'Pídele a papá',
+  'needsPapa.body': 'Papá tiene que entrar primero la primera vez. Pásale la app y dile que pulse "Soy papá".',
+  'needsPapa.cta': 'Soy papá',
+  'profile.changeUser': 'Cambiar de usuario',
 };
 
 const eu: Messages = {
@@ -163,6 +175,8 @@ const eu: Messages = {
   'newSighting.searchPlaceholder': 'Idatzi izena...',
   'newSighting.searching': 'Bilatzen...',
   'newSighting.searchError': 'Ezin izan da bilatu. Internet dago?',
+  'newSighting.noResults': 'Ez dut izen horretako animaliarik aurkitu. Saiatu beste hitz batekin.',
+  'newSighting.caching': 'Animaliaren informazioa bilatzen...',
   'newSighting.confirmTitle': 'Ia! Beste zerbait?',
   'newSighting.confirmSubtitle': 'Egiaztatu datuak eta gorde behaketa.',
   'newSighting.animal': 'Animalia',
@@ -227,6 +241,16 @@ const eu: Messages = {
   'ach.fiveClasses.desc': '5 mota desberdin.',
   'ach.sevenDays.title': 'Safari astea',
   'ach.sevenDays.desc': '7 egun desberdinetan.',
+
+  // Nor zara
+  'whoAreYou.title': 'Nor zara?',
+  'whoAreYou.subtitle': 'Sakatu sartzeko.',
+  'whoAreYou.leo': 'Leo naiz',
+  'whoAreYou.papa': 'Aita naiz',
+  'needsPapa.title': 'Aitari eskatu',
+  'needsPapa.body': 'Aitak sartu behar du lehenik lehen aldian. Eman aplikazioa eta esan "Aita naiz" sakatzeko.',
+  'needsPapa.cta': 'Aita naiz',
+  'profile.changeUser': 'Erabiltzailez aldatu',
 };
 
 export const MESSAGES: Record<Locale, Messages> = { es, eu };

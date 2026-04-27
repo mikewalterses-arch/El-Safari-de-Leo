@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
-import { searchAnimals, type WikiSearchResult } from '@/lib/wikipedia';
+import { searchAnimalTaxa } from '@/lib/inaturalist';
 import { useLocaleStore, useT } from '@/i18n';
+import type { AnimalSearchResult } from '@/types/models';
 
 interface AnimalSearchProps {
-  onSelect: (result: WikiSearchResult) => void;
+  onSelect: (result: AnimalSearchResult) => void;
 }
 
 export function AnimalSearch({ onSelect }: AnimalSearchProps) {
   const t = useT();
   const locale = useLocaleStore((s) => s.locale);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<WikiSearchResult[]>([]);
+  const [results, setResults] = useState<AnimalSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +25,7 @@ export function AnimalSearch({ onSelect }: AnimalSearchProps) {
     setLoading(true);
     setError(null);
     const handle = setTimeout(() => {
-      searchAnimals(query, { lang: locale })
+      searchAnimalTaxa(query, { lang: locale })
         .then((r) => {
           if (!cancelled) setResults(r);
         })
@@ -67,10 +68,16 @@ export function AnimalSearch({ onSelect }: AnimalSearchProps) {
       )}
       {error && <p className="mt-4 text-sm font-semibold text-coral">{error}</p>}
 
+      {!loading && !error && results.length === 0 && query.trim().length >= 2 && (
+        <p className="mt-4 text-sm text-foreground/60">
+          {t('newSighting.noResults')}
+        </p>
+      )}
+
       {results.length > 0 && (
         <ul className="mt-4 space-y-2">
           {results.map((r) => (
-            <li key={r.pageId}>
+            <li key={`${r.source}-${r.sourceId}`}>
               <button
                 type="button"
                 onClick={() => onSelect(r)}
@@ -88,9 +95,9 @@ export function AnimalSearch({ onSelect }: AnimalSearchProps) {
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-extrabold">{r.title}</p>
-                  {r.description && (
-                    <p className="truncate text-sm text-foreground/60">
-                      {r.description}
+                  {r.scientificName && r.scientificName !== r.title && (
+                    <p className="truncate text-sm italic text-foreground/60">
+                      {r.scientificName}
                     </p>
                   )}
                 </div>

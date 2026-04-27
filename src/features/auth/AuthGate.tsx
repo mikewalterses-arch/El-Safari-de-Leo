@@ -2,6 +2,8 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from './useAuth';
 import { useEmailLinkSignIn } from './useEmailLinkSignIn';
 import { LoginScreen } from './LoginScreen';
+import { NeedsPapa } from './NeedsPapa';
+import { useUserTypeStore } from './userType';
 import { ensureUserDoc } from '@/features/user/ensureUserDoc';
 
 interface AuthGateProps {
@@ -11,6 +13,7 @@ interface AuthGateProps {
 export function AuthGate({ children }: AuthGateProps) {
   useEmailLinkSignIn();
   const { user, loading } = useAuth();
+  const userType = useUserTypeStore((s) => s.userType);
   const [seeded, setSeeded] = useState(false);
 
   useEffect(() => {
@@ -19,8 +22,6 @@ export function AuthGate({ children }: AuthGateProps) {
       .then(() => setSeeded(true))
       .catch((err) => {
         console.error('ensureUserDoc failed', err);
-        // No bloqueamos por esto: si falla, la app sigue. Los stats se inicializarán
-        // a vacío en cuanto se cree el primer avistamiento.
         setSeeded(true);
       });
   }, [user, seeded]);
@@ -36,7 +37,12 @@ export function AuthGate({ children }: AuthGateProps) {
     );
   }
 
-  if (!user) return <LoginScreen />;
+  if (!user) {
+    // Sin sesión: papá ve LoginScreen para autenticarse; Leo ve un mensaje
+    // amable diciendo que papá tiene que entrar primero.
+    if (userType === 'leo') return <NeedsPapa />;
+    return <LoginScreen />;
+  }
 
   return <>{children}</>;
 }

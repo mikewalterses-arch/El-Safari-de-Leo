@@ -2,25 +2,17 @@ import { getLocale } from '@/i18n';
 import type { Locale } from '@/i18n';
 
 /**
- * Cliente fino de Wikipedia para identificar animales. El idioma se toma del
- * locale actual (es por defecto, eu si Leo cambió en /perfil).
+ * Cliente fino de Wikipedia para enriquecer datos de animales identificados.
+ * La búsqueda de animales ya NO usa Wikipedia (usa iNaturalist en
+ * `lib/inaturalist.ts:searchAnimalTaxa` para evitar resultados como
+ * "León (ciudad)" cuando Leo busca un animal).
  *
- * Notas:
- * - Si el animal solo tiene artículo en una de las dos lenguas, hay que manejar
- *   el fallo en el caller. No hacemos fallback automático: cambiar el contenido
- *   bajo los pies confunde más que ayuda.
- * - opensearch / generator=search → sugerencias mientras Leo escribe.
- * - REST summary → datos completos al elegir un resultado.
- *
- * Sin API key, sin rate limit en uso normal de un solo usuario.
+ * Wikipedia se usa solo para obtener la descripción rica + imagen al
+ * cachear un animal cuya `wikipediaUrl` viene de iNaturalist.
  */
 
-export interface WikiSearchResult {
-  pageId: number;
-  title: string;
-  description?: string;
-  thumbnailUrl?: string;
-}
+const REST_SUMMARY_HOST = (lang: Locale) =>
+  `https://${lang}.wikipedia.org/api/rest_v1/page/summary`;
 
 export interface WikiSummary {
   pageId: number;
@@ -33,18 +25,6 @@ export interface WikiSummary {
   wikibaseItemQid?: string;
 }
 
-interface MediaWikiSearchPage {
-  pageid: number;
-  title: string;
-  index: number;
-  thumbnail?: { source: string };
-  terms?: { description?: string[] };
-}
-
-interface MediaWikiSearchResponse {
-  query?: { pages?: Record<string, MediaWikiSearchPage> };
-}
-
 interface RestSummaryResponse {
   pageid: number;
   title: string;
@@ -55,55 +35,13 @@ interface RestSummaryResponse {
   wikibase_item?: string;
 }
 
-function actionApi(lang: Locale) {
-  return `https://${lang}.wikipedia.org/w/api.php`;
-}
-
-function restSummary(lang: Locale) {
-  return `https://${lang}.wikipedia.org/api/rest_v1/page/summary`;
-}
-
-export async function searchAnimals(
-  query: string,
-  options: { lang?: Locale; limit?: number } = {},
-): Promise<WikiSearchResult[]> {
-  const lang = options.lang ?? getLocale();
-  const limit = options.limit ?? 8;
-  if (query.trim().length < 2) return [];
-
-  const params = new URLSearchParams({
-    action: 'query',
-    generator: 'search',
-    gsrsearch: query,
-    gsrlimit: String(limit),
-    prop: 'pageimages|pageterms',
-    piprop: 'thumbnail',
-    pithumbsize: '120',
-    wbptterms: 'description',
-    format: 'json',
-    origin: '*',
-  });
-
-  const res = await fetch(`${actionApi(lang)}?${params}`);
-  if (!res.ok) throw new Error(`Wikipedia search failed: ${res.status}`);
-  const data: MediaWikiSearchResponse = await res.json();
-
-  const pages = data.query?.pages ? Object.values(data.query.pages) : [];
-  return pages
-    .sort((a, b) => a.index - b.index)
-    .map((p) => ({
-      pageId: p.pageid,
-      title: p.title,
-      description: p.terms?.description?.[0],
-      thumbnailUrl: p.thumbnail?.source,
-    }));
-}
-
 export async function fetchAnimalSummary(
   title: string,
   lang: Locale = getLocale(),
 ): Promise<WikiSummary> {
-  const res = await fetch(`${restSummary(lang)}/${encodeURIComponent(title)}`);
+  const res = await fetch(
+    `${REST_SUMMARY_HOST(lang)}/${encodeURIComponent(title)}`,
+  );
   if (!res.ok) throw new Error(`Wikipedia summary failed: ${res.status}`);
   const data: RestSummaryResponse = await res.json();
 
@@ -118,4 +56,16 @@ export async function fetchAnimalSummary(
       `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title)}`,
     wikibaseItemQid: data.wikibase_item,
   };
+}
+
+/** Extrae el título del artículo desde una URL de Wikipedia. */
+export function extractWikipediaTitle(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const parts = u.pathname.split('/');
+    const last = parts[parts.length - 1];
+    return last ? decodeURIComponent(last) : null;
+  } catch {
+    return null;
+  }
 }

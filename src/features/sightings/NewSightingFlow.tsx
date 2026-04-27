@@ -10,10 +10,9 @@ import { ensureAnimal } from '@/features/animals/cacheAnimal';
 import { useAuth } from '@/features/auth/useAuth';
 import { getCurrentLocation } from '@/lib/geolocation';
 import { useT } from '@/i18n';
-import type { WikiSearchResult } from '@/lib/wikipedia';
-import type { SightingLocation } from '@/types/models';
+import type { AnimalSearchResult, SightingLocation } from '@/types/models';
 
-type Step = 'photo' | 'identify' | 'confirm' | 'saving' | 'done';
+type Step = 'photo' | 'identify' | 'caching' | 'confirm' | 'saving' | 'done';
 
 export function NewSightingFlow() {
   const t = useT();
@@ -22,7 +21,7 @@ export function NewSightingFlow() {
 
   const [step, setStep] = useState<Step>('photo');
   const [photo, setPhoto] = useState<File | null>(null);
-  const [animal, setAnimal] = useState<WikiSearchResult | null>(null);
+  const [animal, setAnimal] = useState<AnimalSearchResult | null>(null);
   const [animalId, setAnimalId] = useState<string | null>(null);
   const [location, setLocation] = useState<SightingLocation | null>(null);
   const [notes, setNotes] = useState('');
@@ -44,15 +43,17 @@ export function NewSightingFlow() {
     setStep('identify');
   };
 
-  const onAnimalSelected = async (result: WikiSearchResult) => {
+  const onAnimalSelected = async (result: AnimalSearchResult) => {
     setAnimal(result);
     setError(null);
+    setStep('caching');
     try {
       const id = await ensureAnimal(result);
       setAnimalId(id);
       setStep('confirm');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo cargar el animal');
+      setStep('identify');
     }
   };
 
@@ -77,8 +78,6 @@ export function NewSightingFlow() {
     }
   };
 
-  // Tras "done": si es descubrimiento nuevo, dejamos la celebración 2.5s;
-  // si es repetición, 1.2s y a otra cosa.
   useEffect(() => {
     if (step !== 'done') return;
     const delay = isFirstDiscovery ? 2500 : 1200;
@@ -91,6 +90,9 @@ export function NewSightingFlow() {
   }
   if (step === 'identify') {
     return <IdentifyStep onAnimalSelected={onAnimalSelected} />;
+  }
+  if (step === 'caching') {
+    return <FlowStateMessage label={t('newSighting.caching')} spinning />;
   }
   if (step === 'saving') {
     return <FlowStateMessage label={t('newSighting.saving')} spinning />;

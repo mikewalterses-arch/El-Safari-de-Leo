@@ -8,8 +8,9 @@ import {
   type WikiSummary,
 } from '@/lib/wikipedia';
 import { deriveCharacteristics } from '@/features/animals/animalCharacteristics';
+import { findCuratedAnimal } from '@/features/animals/curatedCatalog';
 import { useLocaleStore, useT } from '@/i18n';
-import type { AnimalSearchResult } from '@/types/models';
+import type { AnimalSearchResult, CuratedTags } from '@/types/models';
 
 interface LocationState {
   result?: AnimalSearchResult;
@@ -51,14 +52,30 @@ export function NearbyDetail() {
       .catch(() => {});
   }, [result, locale]);
 
+  const curated: CuratedTags | undefined = useMemo(() => {
+    if (!result) return undefined;
+    const c = findCuratedAnimal(result.title, result.scientificName);
+    return c
+      ? {
+          group: c.group,
+          skeleton: c.skeleton,
+          birth: c.birth,
+          diet: c.diet,
+          habitat: c.habitat,
+          funFact: c.funFact,
+        }
+      : undefined;
+  }, [result]);
+
   const characteristics = useMemo(() => {
     if (!result) return [];
     return deriveCharacteristics(
       result.iconicTaxon,
       summary?.description ?? '',
       locale,
+      curated,
     );
-  }, [result, summary, locale]);
+  }, [result, summary, locale, curated]);
 
   if (loading) {
     return <p className="text-foreground/60">{t('common.loading')}</p>;
@@ -112,6 +129,15 @@ export function NearbyDetail() {
           </p>
         )}
       </div>
+
+      {curated?.funFact && (
+        <section className="rounded-card border-2 border-accent/40 bg-gradient-to-br from-accent/15 to-highlight/30 p-4">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-accent">
+            {t('animal.didYouKnow')}
+          </p>
+          <p className="mt-2 text-base leading-relaxed">{curated.funFact}</p>
+        </section>
+      )}
 
       {characteristics.length > 0 && (
         <section className="rounded-card border border-foreground/10 bg-cream p-4">

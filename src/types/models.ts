@@ -43,6 +43,16 @@ export interface TaxonomicClass {
   name: string;
 }
 
+/** Tags ricos del catálogo curado. Sobrescriben las heurísticas iNat cuando hay match. */
+export interface CuratedTags {
+  group: 'mamifero' | 'ave' | 'pez' | 'reptil' | 'anfibio' | 'invertebrado';
+  skeleton: 'vertebrado' | 'invertebrado';
+  birth: 'viviparo' | 'oviparo';
+  diet: 'carnivoro' | 'herbivoro' | 'omnivoro';
+  habitat: ('terrestre' | 'acuatico' | 'aereo')[];
+  funFact: string;
+}
+
 export interface Animal {
   commonName: string;
   scientificName?: string;
@@ -56,6 +66,8 @@ export interface Animal {
   taxonomicClass?: TaxonomicClass;
   iconicTaxon?: string;
   soundUrl?: string;
+  /** Datos curados si el animal está en `curatedCatalog`. */
+  curatedTags?: CuratedTags;
 }
 
 export type SightingSize = 'small' | 'medium' | 'large';

@@ -8,7 +8,13 @@ import {
 import { fetchTaxonomicClass } from '@/lib/wikidata';
 import { fetchAnimalSound } from '@/lib/wikimedia';
 import { getLocale, type Locale } from '@/i18n';
-import type { Animal, AnimalSearchResult, TaxonomicClass } from '@/types/models';
+import { findCuratedAnimal } from './curatedCatalog';
+import type {
+  Animal,
+  AnimalSearchResult,
+  CuratedTags,
+  TaxonomicClass,
+} from '@/types/models';
 
 const ENRICH_TIMEOUT_MS = 4000;
 
@@ -60,6 +66,25 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
     [result.title, result.scientificName].filter(Boolean).join(' — ') ||
     result.title;
 
+  // Catálogo curado: si el animal está en la lista hand-crafted, usamos sus
+  // tags multi-valor en lugar de las heurísticas. Cubre los ~88 animales más
+  // habituales (perro, león, pingüino, pulpo, etc) con datos rigurosos +
+  // dato curioso adaptado a niños.
+  const curated = findCuratedAnimal(
+    summary?.title ?? result.title,
+    result.scientificName,
+  );
+  const curatedTags: CuratedTags | undefined = curated
+    ? {
+        group: curated.group,
+        skeleton: curated.skeleton,
+        birth: curated.birth,
+        diet: curated.diet,
+        habitat: curated.habitat,
+        funFact: curated.funFact,
+      }
+    : undefined;
+
   const animal: Animal = {
     commonName: summary?.title ?? result.title,
     description: finalDescription,
@@ -73,6 +98,7 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
     ...(taxClass && { taxonomicClass: taxClass }),
     ...(result.iconicTaxon && { iconicTaxon: result.iconicTaxon }),
     ...(soundUrl && { soundUrl }),
+    ...(curatedTags && { curatedTags }),
   };
   await setDoc(ref, animal);
   return animalId;

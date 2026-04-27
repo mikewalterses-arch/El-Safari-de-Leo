@@ -48,7 +48,12 @@ export function AnimalDetail() {
   const characteristics = useMemo(
     () =>
       animal
-        ? deriveCharacteristics(animal.iconicTaxon, animal.description, locale)
+        ? deriveCharacteristics(
+            animal.iconicTaxon,
+            animal.description,
+            locale,
+            animal.curatedTags,
+          )
         : [],
     [animal, locale],
   );
@@ -96,6 +101,17 @@ export function AnimalDetail() {
       </div>
 
       {animal.soundUrl && <SoundButton url={animal.soundUrl} />}
+
+      {animal.curatedTags?.funFact && (
+        <section className="rounded-card border-2 border-accent/40 bg-gradient-to-br from-accent/15 to-highlight/30 p-4">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-accent">
+            {t('animal.didYouKnow')}
+          </p>
+          <p className="mt-2 text-base leading-relaxed">
+            {animal.curatedTags.funFact}
+          </p>
+        </section>
+      )}
 
       {characteristics.length > 0 && (
         <section className="rounded-card border border-foreground/10 bg-cream p-4">

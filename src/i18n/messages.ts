@@ -110,6 +110,7 @@ const es: Messages = {
   'animal.deleteConfirm': '¿Borrar este avistamiento? No se puede deshacer.',
   'animal.edit': 'Editar',
   'animal.characteristics': 'Características',
+  'animal.didYouKnow': '¿Sabías que...?',
 
   // Características
   'char.type': 'Tipo',

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Cell,
   Pie,
@@ -114,6 +115,8 @@ export function Profile() {
       <AchievementsSection />
 
       <LanguageSection />
+
+      <ViewIntroLink />
 
       <ChangeUserSection />
 
@@ -292,6 +295,18 @@ function LanguageSection() {
         ))}
       </div>
     </section>
+  );
+}
+
+function ViewIntroLink() {
+  const t = useT();
+  return (
+    <Link
+      to="/intro"
+      className="block w-full rounded-button border border-foreground/15 bg-cream py-3 text-center text-sm font-semibold text-foreground/70 transition-colors hover:border-primary"
+    >
+      {t('profile.viewIntro')}
+    </Link>
   );
 }
 

@@ -5,12 +5,16 @@ import {
   Compass,
   Map as MapIcon,
   Users,
+  X,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 interface OnboardingProps {
   onComplete: () => void;
+  /** Si se proporciona, muestra una X arriba a la derecha para cerrar la intro
+   *  sin completar (modo demostración desde Perfil → "Ver intro"). */
+  onClose?: () => void;
 }
 
 type SlideVisual = 'birthday' | 'compass' | 'family' | 'steps';
@@ -23,8 +27,6 @@ interface Slide {
   visual: SlideVisual;
 }
 
-// TODO(post-fase-1): para cumpleaños futuros, calcular el número desde users/{uid}.birthDate
-// en lugar de hardcodear "7". El placeholder de hoy es intencional: es su regalo de los 7.
 const slides: Slide[] = [
   {
     eyebrow: '¡Feliz cumpleaños!',
@@ -56,7 +58,7 @@ const slides: Slide[] = [
   },
 ];
 
-export function Onboarding({ onComplete }: OnboardingProps) {
+export function Onboarding({ onComplete, onClose }: OnboardingProps) {
   const [step, setStep] = useState(0);
   const slide = slides[step]!;
   const isLast = step === slides.length - 1;
@@ -68,6 +70,17 @@ export function Onboarding({ onComplete }: OnboardingProps) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface text-foreground">
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar"
+          className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-foreground/10 text-foreground hover:bg-foreground/20"
+        >
+          <X className="h-5 w-5" strokeWidth={2.5} />
+        </button>
+      )}
+
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
         <div className="mx-auto w-full max-w-md">
           <SlideArt variant={slide.visual} />

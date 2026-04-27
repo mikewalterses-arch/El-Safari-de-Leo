@@ -187,7 +187,7 @@ function FeatureList() {
     },
     {
       icon: MapPin,
-      title: 'Pokédex, mapa y diario',
+      title: 'Colección, mapa y diario',
       body: 'Su colección crece. Ve sus aventuras en el mapa.',
     },
   ];

@@ -12,19 +12,6 @@ import type { Animal, AnimalSearchResult, TaxonomicClass } from '@/types/models'
 
 const ENRICH_TIMEOUT_MS = 4000;
 
-/**
- * Cachea un animal en `animals/{id}` y devuelve el id usado.
- * El id depende de la fuente:
- * - `inat_{taxonId}` si viene de iNaturalist (caso normal en fase 4+).
- * - `{lang}_{wikipediaPageId}` si viene de Wikipedia (entradas legacy).
- *
- * Idempotente: si ya está cacheado, no toca la red.
- *
- * Si hay wikipediaUrl, se usa Wikipedia para enriquecer con descripción
- * rica + imagen + sonido + clase taxonómica (Wikidata). Estos pasos están
- * limitados con timeout de 4 s para no bloquear al usuario si el SPARQL
- * está lento.
- */
 export async function ensureAnimal(result: AnimalSearchResult): Promise<string> {
   const lang = getLocale();
   const animalId =
@@ -36,7 +23,6 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
   const existing = await getDoc(ref);
   if (existing.exists()) return animalId;
 
-  // Si tenemos una URL de Wikipedia, intentamos descripción rica.
   let summary: WikiSummary | null = null;
   if (result.wikipediaUrl) {
     const title = extractWikipediaTitle(result.wikipediaUrl);
@@ -45,7 +31,6 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
     }
   }
 
-  // Enriquecimiento opcional con timeout.
   const [taxClassFromWikidata, soundUrl] = await Promise.all([
     summary?.wikibaseItemQid
       ? withTimeout(
@@ -63,15 +48,10 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
       : Promise.resolve(undefined),
   ]);
 
-  // Fallback de clase taxonómica: el iconicTaxon de iNat ya nos dice si es
-  // mamífero, ave, etc, sin necesidad de SPARQL.
   const taxClass: TaxonomicClass | undefined =
     taxClassFromWikidata ??
     (result.iconicTaxon
-      ? {
-          qid: '',
-          name: localizeIconicTaxon(result.iconicTaxon, lang),
-        }
+      ? { qid: '', name: localizeIconicTaxon(result.iconicTaxon, lang) }
       : undefined);
 
   const finalThumb = summary?.thumbnailUrl ?? result.thumbnailUrl;
@@ -91,6 +71,7 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
     ...(finalThumb && { thumbnailUrl: finalThumb }),
     ...(summary?.imageUrl && { imageUrl: summary.imageUrl }),
     ...(taxClass && { taxonomicClass: taxClass }),
+    ...(result.iconicTaxon && { iconicTaxon: result.iconicTaxon }),
     ...(soundUrl && { soundUrl }),
   };
   await setDoc(ref, animal);

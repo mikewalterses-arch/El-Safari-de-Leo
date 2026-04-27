@@ -1,11 +1,5 @@
 import type { Timestamp } from 'firebase/firestore';
 
-/**
- * Espejo TypeScript de las colecciones de Firestore.
- * Mantener sincronizado si cambian las shapes en Firestore.
- */
-
-/** Documento en `users/{userId}`. userId == ADMIN_UID. El perfil representa a Leo. */
 export interface User {
   displayName: string;
   birthDate: Timestamp;
@@ -37,10 +31,11 @@ export interface Animal {
   source: 'wikipedia' | 'inaturalist' | 'manual';
   createdAt: Timestamp;
   taxonomicClass?: TaxonomicClass;
+  /** Iconic taxon de iNat en inglés ("Mammalia", "Aves"...). Estable entre idiomas — usado para badges educativas. */
+  iconicTaxon?: string;
   soundUrl?: string;
 }
 
-/** Atributos opcionales que Leo añade en el paso de confirmación. */
 export type SightingSize = 'small' | 'medium' | 'large';
 export type SightingActivity =
   | 'sleeping'
@@ -76,7 +71,6 @@ export interface SightingLocation {
   placeName: string;
 }
 
-/** Documento en `notes/{noteId}`. Diario libre, notas sin foto. */
 export interface JournalNote {
   text: string;
   createdAt: Timestamp;

@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
@@ -11,11 +12,13 @@ import { db } from '@/lib/firebase';
 import { useSightings } from '@/features/sightings/useSightings';
 import { useAuth } from '@/features/auth/useAuth';
 import { replaceSightingPhoto } from '@/features/sightings/replaceSightingPhoto';
-import { useT } from '@/i18n';
+import { deriveBadges } from '@/features/animals/categoryBadges';
+import { useLocaleStore, useT } from '@/i18n';
 import type { Animal, SightingAttributes } from '@/types/models';
 
 export function AnimalDetail() {
   const t = useT();
+  const locale = useLocaleStore((s) => s.locale);
   const { animalId } = useParams<{ animalId: string }>();
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +35,26 @@ export function AnimalDetail() {
       .finally(() => setLoading(false));
   }, [animalId]);
 
-  const mySightings = sightings.filter((s) => s.animalId === animalId);
+  const mySightings = useMemo(
+    () => sightings.filter((s) => s.animalId === animalId),
+    [sightings, animalId],
+  );
+
+  const heroPhotoUrl =
+    mySightings[0]?.photoUrl ||
+    mySightings[0]?.thumbnailUrl ||
+    animal?.imageUrl ||
+    animal?.thumbnailUrl ||
+    null;
+
+  const hasMyPhoto = Boolean(
+    mySightings[0]?.photoUrl || mySightings[0]?.thumbnailUrl,
+  );
+
+  const badges = useMemo(
+    () => (animal ? deriveBadges(animal.iconicTaxon, locale) : []),
+    [animal, locale],
+  );
 
   if (loading) {
     return <p className="text-foreground/60">{t('common.loading')}</p>;
@@ -51,28 +73,43 @@ export function AnimalDetail() {
     <div className="space-y-6">
       <BackLink />
 
-      {animal.imageUrl ? (
-        <img
-          src={animal.imageUrl}
-          alt={animal.commonName}
-          className="aspect-square w-full rounded-card object-cover shadow-card"
-        />
-      ) : animal.thumbnailUrl ? (
-        <img
-          src={animal.thumbnailUrl}
-          alt={animal.commonName}
-          className="aspect-square w-full rounded-card object-cover shadow-card"
-        />
-      ) : null}
+      {heroPhotoUrl && (
+        <div className="relative">
+          <img
+            src={heroPhotoUrl}
+            alt={animal.commonName}
+            className="aspect-square w-full rounded-card object-cover shadow-card"
+          />
+          {hasMyPhoto && (
+            <span className="absolute bottom-3 left-3 rounded-pill bg-foreground/70 px-3 py-1 text-xs font-extrabold text-surface backdrop-blur">
+              {t('animal.yourPhoto')}
+            </span>
+          )}
+        </div>
+      )}
 
       <div>
         <h2 className="text-3xl font-extrabold">{animal.commonName}</h2>
-        {animal.taxonomicClass && (
-          <p className="mt-1 text-sm font-extrabold uppercase tracking-wide text-accent">
-            {animal.taxonomicClass.name}
-          </p>
-        )}
+        {animal.scientificName &&
+          animal.scientificName !== animal.commonName && (
+            <p className="mt-1 text-sm italic text-foreground/60">
+              {animal.scientificName}
+            </p>
+          )}
       </div>
+
+      {badges.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {badges.map((b) => (
+            <span
+              key={b.key}
+              className="rounded-pill bg-primary/15 px-3 py-1 text-xs font-extrabold text-foreground"
+            >
+              {b.label}
+            </span>
+          ))}
+        </div>
+      )}
 
       {animal.soundUrl && <SoundButton url={animal.soundUrl} />}
 
@@ -80,14 +117,24 @@ export function AnimalDetail() {
         <p className="leading-relaxed">{animal.description}</p>
       )}
 
-      <a
-        href={animal.wikipediaUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex items-center gap-2 text-sm font-semibold text-primary underline-offset-4 hover:underline"
-      >
-        {t('animal.wikipedia')} <ExternalLink className="h-4 w-4" />
-      </a>
+      <div className="flex items-center gap-3 rounded-card border border-foreground/10 bg-cream p-3">
+        {animal.thumbnailUrl && hasMyPhoto && (
+          <img
+            src={animal.thumbnailUrl}
+            alt=""
+            className="h-12 w-12 shrink-0 rounded-button object-cover"
+          />
+        )}
+        <a
+          href={animal.wikipediaUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex flex-1 items-center justify-between gap-2 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          {t('animal.wikipedia')}
+          <ExternalLink className="h-4 w-4" />
+        </a>
+      </div>
 
       {mySightings.length > 0 && (
         <section>

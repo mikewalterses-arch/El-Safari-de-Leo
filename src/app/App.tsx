@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from '@/app/router';
 import { Onboarding } from '@/pages/Onboarding/Onboarding';
 import { AuthGate } from '@/features/auth/AuthGate';
 import { WhoAreYou } from '@/features/auth/WhoAreYou';
 import { useUserTypeStore } from '@/features/auth/userType';
+import { useAuth } from '@/features/auth/useAuth';
 
 const ONBOARDING_KEY = 'safarideleo:onboardingCompleted';
 
@@ -14,14 +15,17 @@ export function App() {
     () => localStorage.getItem(ONBOARDING_KEY) === 'true',
   );
 
-  // Paso 0: ¿quién eres? — gate antes de cualquier otra cosa.
+  // Para usuarios recién creados (otra familia que abre la app por primera
+  // vez) saltamos el onboarding del cumpleaños — ese flujo es específico de
+  // Leo. Detectamos "recién creado" comparando creationTime con lastSignInTime.
+  useAutoSkipOnboardingForNewUsers(setCompleted);
+
   if (!userType) {
     return <WhoAreYou />;
   }
 
   return (
     <AuthGate>
-      {/* Onboarding solo se muestra a Leo (papá no necesita la felicitación). */}
       {userType === 'leo' && !completed ? (
         <Onboarding
           onComplete={() => {
@@ -34,4 +38,25 @@ export function App() {
       )}
     </AuthGate>
   );
+}
+
+function useAutoSkipOnboardingForNewUsers(
+  setCompleted: (v: boolean) => void,
+) {
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user) return;
+    const created = user.metadata.creationTime;
+    const lastSignIn = user.metadata.lastSignInTime;
+    if (!created || !lastSignIn) return;
+    const diff = Math.abs(
+      new Date(created).getTime() - new Date(lastSignIn).getTime(),
+    );
+    // Si la cuenta se creó en el último minuto, es un usuario nuevo: saltamos
+    // el onboarding cumpleaños (es de Leo, no aplica a otras familias).
+    if (diff < 60_000 && localStorage.getItem(ONBOARDING_KEY) !== 'true') {
+      localStorage.setItem(ONBOARDING_KEY, 'true');
+      setCompleted(true);
+    }
+  }, [user, setCompleted]);
 }

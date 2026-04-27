@@ -123,6 +123,8 @@ const es: Messages = {
   'profile.edit': 'Editar',
   'profile.save': 'Guardar',
   'profile.signOut': 'Cerrar sesión',
+  'profile.viewIntro': 'Ver introducción de la app',
+  'animal.yourPhoto': 'Tu foto',
 
   // Descubrimiento
   'discovery.title': '¡Nuevo descubrimiento!',
@@ -292,6 +294,8 @@ const eu: Messages = {
   'profile.edit': 'Editatu',
   'profile.save': 'Gorde',
   'profile.signOut': 'Saioa itxi',
+  'profile.viewIntro': 'Aplikazioaren sarrera ikusi',
+  'animal.yourPhoto': 'Zure argazkia',
 
   // Aurkikuntza
   'discovery.title': 'Aurkikuntza berria!',

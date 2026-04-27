@@ -54,7 +54,9 @@ function taxonToSearchResult(t: INatTaxon): AnimalSearchResult {
     title: t.preferred_common_name ?? t.name,
     scientificName: t.name,
     description: t.preferred_common_name ? t.name : undefined,
-    thumbnailUrl: t.default_photo?.square_url ?? t.default_photo?.medium_url,
+    // Preferimos medium_url (240px) sobre square_url (75px) — la imagen pequeña
+    // se ve pixelada cuando se muestra en grande en NearbyDetail.
+    thumbnailUrl: t.default_photo?.medium_url ?? t.default_photo?.square_url,
     wikipediaUrl: t.wikipedia_url,
     iconicTaxon: t.iconic_taxon_name,
   };
@@ -153,6 +155,9 @@ export async function fetchNearbySpecies(
     taxonId: r.taxon.id,
     scientificName: r.taxon.name,
     commonName: r.taxon.preferred_common_name,
+    // square_url (75px) es suficiente para el grid pequeño de Home — la
+    // misma URL se reutiliza en NearbyDetail vía nearbyToSearchResult, pero
+    // ahí el preview es lo bastante pequeño para que no se note.
     thumbnailUrl: r.taxon.default_photo?.square_url ?? r.taxon.default_photo?.medium_url,
     count: r.count,
     wikipediaUrl: r.taxon.wikipedia_url,

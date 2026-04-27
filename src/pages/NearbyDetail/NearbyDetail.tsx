@@ -95,11 +95,13 @@ export function NearbyDetail() {
       </Link>
 
       {heroPhoto && (
-        <img
-          src={heroPhoto}
-          alt={result.title}
-          className="aspect-square w-full rounded-card object-cover shadow-card"
-        />
+        <div className="flex justify-center">
+          <img
+            src={heroPhoto}
+            alt={result.title}
+            className="max-h-72 w-auto max-w-full rounded-card object-contain shadow-card"
+          />
+        </div>
       )}
 
       <div>

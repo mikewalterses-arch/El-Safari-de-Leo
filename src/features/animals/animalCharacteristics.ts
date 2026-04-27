@@ -2,19 +2,24 @@ import type { Locale } from '@/i18n';
 
 /**
  * Deriva un panel de características educativas del animal: tipo, esqueleto,
- * reproducción, movimiento, hábitat y alimentación. Los datos se construyen
- * desde el iconic taxon de iNat y, para alimentación, parseando el extract
- * de Wikipedia (heurística por palabras como "carnívoro", "herbívoro"...).
+ * reproducción, hábitat (multi-valor) y alimentación.
  *
- * Las reglas son aproximaciones para un niño de 7 años. Hay excepciones
- * biológicas (ornitorrinco mamífero ovíparo, avestruz no vuela...) que
- * ignoramos a favor de la simplicidad pedagógica.
+ * - Tipo, esqueleto, reproducción y hábitat se derivan del iconic taxon de
+ *   iNat (heurísticas adecuadas para 7 años — ignoramos excepciones como
+ *   ornitorrinco mamífero ovíparo, pingüino ave que no vuela, etc).
+ * - Alimentación se extrae con regex del extract de Wikipedia. Si no se
+ *   encuentra palabra clave, se omite la fila.
+ *
+ * Las heurísticas son INTENCIONALMENTE simples: para hacer educación rica
+ * por especie hace falta un catálogo curado (post-fase actual).
  */
 
 export interface Characteristic {
   labelKey: string;
   value: string;
 }
+
+type Habitat = 'land' | 'water' | 'air';
 
 const TYPE_BY_TAXON: Record<string, Record<Locale, string>> = {
   Mammalia: { es: 'Mamífero', eu: 'Ugaztuna' },
@@ -49,16 +54,28 @@ const REPRO_BY_TAXON: Record<string, 'viviparous' | 'oviparous'> = {
   Mollusca: 'oviparous',
 };
 
-const MOVEMENT_BY_TAXON: Record<string, 'walks' | 'flies' | 'swims'> = {
-  Mammalia: 'walks',
-  Aves: 'flies',
-  Reptilia: 'walks',
-  Actinopterygii: 'swims',
-  Insecta: 'flies',
-  Arachnida: 'walks',
+/**
+ * Hábitats por defecto por clase. Los anfibios y aves tienen múltiples valores
+ * porque la clase como concepto cubre varios medios. Para 7 años, "vive en
+ * agua y tierra" para una rana es educativo y correcto.
+ *
+ * Mollusca no tiene default (varía mucho: caracol terrestre vs pulpo acuático).
+ */
+const HABITAT_BY_TAXON: Record<string, Habitat[]> = {
+  Mammalia: ['land'],
+  Aves: ['air', 'land'],
+  Reptilia: ['land'],
+  Amphibia: ['water', 'land'],
+  Actinopterygii: ['water'],
+  Insecta: ['air', 'land'],
+  Arachnida: ['land'],
 };
 
-const AMPHIBIOUS = new Set(['Amphibia']);
+const HABITAT_LABELS: Record<Habitat, Record<Locale, string>> = {
+  land: { es: 'Tierra', eu: 'Lurra' },
+  water: { es: 'Agua', eu: 'Ura' },
+  air: { es: 'Aire', eu: 'Airea' },
+};
 
 const SKELETON_LABELS: Record<string, Record<Locale, string>> = {
   vertebrate: {
@@ -72,29 +89,14 @@ const SKELETON_LABELS: Record<string, Record<Locale, string>> = {
 };
 
 const REPRO_LABELS: Record<string, Record<Locale, string>> = {
-  // Vivíparo = el embrión se desarrolla dentro del cuerpo de la madre y nace
-  // ya formado (mayoría de mamíferos).
   viviparous: {
     es: 'Nace del vientre de su madre (vivíparo)',
     eu: 'Amaren sabeletik jaiotzen da (bizidun)',
   },
-  // Ovíparo = se desarrolla dentro de un huevo que sale del cuerpo de la madre
-  // y eclosiona fuera. Aves, reptiles, peces, anfibios, insectos.
   oviparous: {
     es: 'Nace de un huevo (ovíparo)',
     eu: 'Arrautza batetik jaiotzen da (errulea)',
   },
-};
-
-const MOVEMENT_LABELS: Record<string, Record<Locale, string>> = {
-  walks: { es: 'Camina', eu: 'Ibiltzen da' },
-  flies: { es: 'Vuela', eu: 'Hegan egiten du' },
-  swims: { es: 'Nada', eu: 'Igeri egiten du' },
-};
-
-const AMPHIBIOUS_LABEL: Record<Locale, string> = {
-  es: 'Vive en agua y tierra',
-  eu: 'Uretan eta lehorrean bizi da',
 };
 
 const DIET_LABELS: Record<string, Record<Locale, string>> = {
@@ -105,6 +107,16 @@ const DIET_LABELS: Record<string, Record<Locale, string>> = {
   frugivore: { es: 'Frugívoro (come frutas)', eu: 'Frutajalea' },
   granivore: { es: 'Granívoro (come semillas)', eu: 'Hazijalea' },
   piscivore: { es: 'Piscívoro (come peces)', eu: 'Arrainjalea' },
+};
+
+/**
+ * Default de alimentación cuando Wikipedia no menciona palabra clave.
+ * Solo donde la generalización es bastante segura.
+ */
+const DEFAULT_DIET_BY_TAXON: Record<string, string | undefined> = {
+  Reptilia: 'carnivore',
+  Amphibia: 'carnivore',
+  Arachnida: 'carnivore',
 };
 
 function extractDiet(description: string): string | null {
@@ -146,22 +158,19 @@ export function deriveCharacteristics(
       });
     }
 
-    if (AMPHIBIOUS.has(iconicTaxon)) {
-      rows.push({ labelKey: 'char.habitat', value: AMPHIBIOUS_LABEL[lang] });
-    } else {
-      const move = MOVEMENT_BY_TAXON[iconicTaxon];
-      if (move) {
-        rows.push({
-          labelKey: 'char.movement',
-          value: MOVEMENT_LABELS[move][lang],
-        });
-      }
+    const habitats = HABITAT_BY_TAXON[iconicTaxon];
+    if (habitats && habitats.length > 0) {
+      const value = habitats.map((h) => HABITAT_LABELS[h][lang]).join(' + ');
+      rows.push({ labelKey: 'char.habitat', value });
     }
   }
 
-  const diet = extractDiet(description);
-  if (diet) {
-    rows.push({ labelKey: 'char.diet', value: DIET_LABELS[diet][lang] });
+  // Diet: extraído de Wikipedia → fallback por clase si falla.
+  const dietKey =
+    extractDiet(description) ??
+    (iconicTaxon ? DEFAULT_DIET_BY_TAXON[iconicTaxon] : null);
+  if (dietKey && DIET_LABELS[dietKey]) {
+    rows.push({ labelKey: 'char.diet', value: DIET_LABELS[dietKey][lang] });
   }
 
   return rows;

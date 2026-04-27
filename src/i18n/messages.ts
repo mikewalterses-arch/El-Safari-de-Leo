@@ -115,8 +115,7 @@ const es: Messages = {
   'char.type': 'Tipo',
   'char.skeleton': 'Esqueleto',
   'char.reproduction': 'Cómo nace',
-  'char.movement': 'Cómo se mueve',
-  'char.habitat': 'Dónde vive',
+  'char.habitat': 'Vive en',
   'char.diet': 'Qué come',
 
   // Editar avistamiento
@@ -370,7 +369,6 @@ const eu: Messages = {
   'char.type': 'Mota',
   'char.skeleton': 'Hezurdura',
   'char.reproduction': 'Nola jaiotzen da',
-  'char.movement': 'Nola mugitzen da',
   'char.habitat': 'Non bizi da',
   'char.diet': 'Zer jaten du',
 

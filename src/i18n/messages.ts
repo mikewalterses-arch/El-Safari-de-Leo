@@ -351,6 +351,7 @@ const es: Messages = {
 
   // Landing pública /conoce
   'discover.brand': 'El Safari',
+  'discover.productName': 'El Safari de Leo',
   'discover.tryApp': 'Probar la app',
   'discover.hero.eyebrow': 'Para peques curiosos de 5 a 10 años',
   'discover.hero.title': 'La app que convierte cada paseo en un <span class="text-primary">safari</span>.',
@@ -704,6 +705,7 @@ const eu: Messages = {
 
   // /conoce orrialde publikoa
   'discover.brand': 'El Safari',
+  'discover.productName': 'Leoren Safaria',
   'discover.tryApp': 'Probatu aplikazioa',
   'discover.hero.eyebrow': '5 eta 10 urte bitarteko haur jakin-min handikoentzat',
   'discover.hero.title': 'Paseo bakoitza <span class="text-primary">safari</span> bihurtzen duen aplikazioa.',

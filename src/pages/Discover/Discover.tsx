@@ -49,26 +49,20 @@ function Header() {
   return (
     <header className="border-b border-foreground/10 bg-surface/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3">
-        <a href="/conoce" className="flex items-center gap-2">
+        <a href="/conoce" aria-label={t('discover.productName')}>
           <img
             src="/icons/safari-de-leo-source.svg"
             alt=""
-            className="h-9 w-9"
+            className="h-10 w-10"
           />
-          <span className="text-base font-extrabold tracking-tight">
-            {t('discover.brand')}
-          </span>
         </a>
-        <div className="flex items-center gap-2">
-          <LocaleSwitcher />
-          <a
-            href="/"
-            className="inline-flex items-center gap-1.5 rounded-button bg-foreground px-4 py-2 text-sm font-extrabold text-surface transition-transform active:translate-y-px"
-          >
-            {t('discover.tryApp')}
-            <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
-          </a>
-        </div>
+        <a
+          href="/"
+          className="inline-flex items-center gap-1.5 rounded-button bg-foreground px-4 py-2 text-sm font-extrabold text-surface transition-transform active:translate-y-px"
+        >
+          {t('discover.tryApp')}
+          <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+        </a>
       </div>
     </header>
   );
@@ -109,11 +103,14 @@ function Hero() {
           <Sparkles className="h-3.5 w-3.5" strokeWidth={2.5} />
           {t('discover.hero.eyebrow')}
         </p>
-        <h1
-          className="mx-auto max-w-3xl text-4xl font-extrabold leading-tight sm:text-6xl"
+        <h1 className="mx-auto max-w-4xl text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-7xl">
+          {t('discover.productName')}
+        </h1>
+        <p
+          className="mx-auto mt-6 max-w-3xl text-2xl font-extrabold leading-tight text-foreground/85 sm:text-3xl"
           dangerouslySetInnerHTML={{ __html: t('discover.hero.title') }}
         />
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-foreground/75 sm:text-xl">
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-foreground/70 sm:text-xl">
           {t('discover.hero.body')}
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -330,8 +327,11 @@ function FinalCta() {
 function Footer() {
   const t = useT();
   return (
-    <footer className="mx-auto w-full max-w-5xl px-4 py-10 text-center text-sm text-foreground/60">
-      <p>{t('discover.footer')}</p>
+    <footer className="mx-auto w-full max-w-5xl px-4 py-10 text-center">
+      <div className="flex justify-center">
+        <LocaleSwitcher />
+      </div>
+      <p className="mt-6 text-sm text-foreground/60">{t('discover.footer')}</p>
     </footer>
   );
 }

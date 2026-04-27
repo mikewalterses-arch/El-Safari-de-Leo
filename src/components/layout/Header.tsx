@@ -4,7 +4,7 @@ import { SupervisionStrip } from './SupervisionStrip';
 
 export function Header() {
   return (
-    <div className="sticky top-0 z-10">
+    <div className="sticky top-0 z-[1100]">
       <header className="border-b border-foreground/10 bg-surface/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-md items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-extrabold">

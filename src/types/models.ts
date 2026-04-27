@@ -51,6 +51,8 @@ export interface CuratedTags {
   diet: 'carnivoro' | 'herbivoro' | 'omnivoro';
   habitat: ('terrestre' | 'acuatico' | 'aereo')[];
   funFact: string;
+  /** Tamaño aproximado en metros (longitud o altura). Opcional por compat. */
+  sizeMeters?: number;
 }
 
 export interface Animal {

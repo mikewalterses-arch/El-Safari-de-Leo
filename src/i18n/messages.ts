@@ -125,6 +125,10 @@ const es: Messages = {
   'animal.edit': 'Editar',
   'animal.characteristics': 'Características',
   'animal.didYouKnow': '¿Sabías que...?',
+  'animal.share': 'Compartir',
+  'animal.sharing': 'Compartiendo...',
+  'animal.sizeTitle': 'Comparación de tamaño',
+  'animal.sizeKid': 'Tú (7 años)',
 
   // Características
   'char.type': 'Tipo',

@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, Pencil, Trash2, Volume2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Pencil, Share2, Trash2, Volume2 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSightings } from '@/features/sightings/useSightings';
 import { useAuth } from '@/features/auth/useAuth';
+import { useKids } from '@/features/kids/useKids';
 import { deleteSighting } from '@/features/sightings/deleteSighting';
+import { ShareCard } from '@/features/sightings/ShareCard';
+import { captureAndShare } from '@/features/sightings/shareSighting';
 import { deriveCharacteristics } from '@/features/animals/animalCharacteristics';
+import { SizeComparison } from '@/features/animals/SizeComparison';
 import { useLocaleStore, useT } from '@/i18n';
 import type { Animal, SightingAttributes } from '@/types/models';
 
@@ -113,6 +117,13 @@ export function AnimalDetail() {
         </section>
       )}
 
+      {animal.curatedTags?.sizeMeters !== undefined && (
+        <SizeComparison
+          sizeMeters={animal.curatedTags.sizeMeters}
+          thumbnailUrl={animal.thumbnailUrl}
+        />
+      )}
+
       {characteristics.length > 0 && (
         <section className="rounded-card border border-foreground/10 bg-cream p-4">
           <h3 className="text-lg font-extrabold">{t('animal.characteristics')}</h3>
@@ -169,12 +180,14 @@ export function AnimalDetail() {
                 <SightingItem
                   key={s.id}
                   sightingId={s.id}
+                  photoUrl={s.photoUrl}
                   thumbnailUrl={s.thumbnailUrl}
                   placeName={s.location?.placeName}
                   date={date}
                   notes={s.notes}
                   attributes={s.attributes}
                   uid={user?.uid}
+                  animalName={animal.commonName}
                 />
               );
             })}
@@ -234,26 +247,33 @@ function SoundButton({ url }: { url: string }) {
 
 interface SightingItemProps {
   sightingId: string;
+  photoUrl?: string;
   thumbnailUrl?: string;
   placeName?: string;
   date?: Date;
   notes?: string;
   attributes?: SightingAttributes;
   uid?: string;
+  animalName: string;
 }
 
 function SightingItem({
   sightingId,
+  photoUrl,
   thumbnailUrl,
   placeName,
   date,
   notes,
   attributes,
   uid,
+  animalName,
 }: SightingItemProps) {
   const t = useT();
+  const { activeKid } = useKids();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const onDelete = async () => {
     if (!uid) return;
@@ -265,6 +285,25 @@ function SightingItem({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Algo falló');
       setBusy(false);
+    }
+  };
+
+  const onShare = async () => {
+    setSharing(true);
+    setError(null);
+    // Esperamos un tick para que la ShareCard se monte off-screen
+    await new Promise((r) => setTimeout(r, 50));
+    if (!cardRef.current) {
+      setSharing(false);
+      return;
+    }
+    try {
+      await captureAndShare(cardRef.current, `${animalName}-${sightingId}`);
+    } catch (err) {
+      console.error('share failed', err);
+      setError(err instanceof Error ? err.message : 'No se pudo compartir');
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -302,6 +341,17 @@ function SightingItem({
               <Pencil className="h-3.5 w-3.5" />
               {t('animal.edit')}
             </Link>
+            {photoUrl && (
+              <button
+                type="button"
+                onClick={onShare}
+                disabled={sharing}
+                className="inline-flex items-center gap-1 rounded-pill border border-foreground/15 bg-surface px-2.5 py-1 text-xs font-semibold text-foreground/70 disabled:opacity-50"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                {sharing ? t('animal.sharing') : t('animal.share')}
+              </button>
+            )}
             <button
               type="button"
               onClick={onDelete}
@@ -317,6 +367,26 @@ function SightingItem({
           <p className="mt-1 text-xs font-semibold text-coral">{error}</p>
         )}
       </div>
+
+      {sharing && photoUrl && activeKid && (
+        <div
+          style={{
+            position: 'fixed',
+            top: -3000,
+            left: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          <ShareCard
+            ref={cardRef}
+            photoUrl={photoUrl}
+            animalName={animalName}
+            placeName={placeName}
+            date={date}
+            kidName={activeKid.displayName}
+          />
+        </div>
+      )}
     </li>
   );
 }

@@ -82,6 +82,7 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
         diet: curated.diet,
         habitat: curated.habitat,
         funFact: curated.funFact,
+        sizeMeters: curated.sizeMeters,
       }
     : undefined;
 

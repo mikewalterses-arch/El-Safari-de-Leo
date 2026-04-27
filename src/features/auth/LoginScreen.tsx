@@ -54,9 +54,11 @@ export function LoginScreen() {
     <div className="flex min-h-dvh flex-col items-center justify-center bg-surface p-6">
       <div className="w-full max-w-md">
         <div className="text-center">
-          <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-extrabold text-foreground">
-            L
-          </span>
+          <img
+            src="/icons/safari-de-leo-source.svg"
+            alt=""
+            className="inline-block h-20 w-20 rounded-full"
+          />
           <h1 className="mt-6 text-3xl font-extrabold">Configura el safari</h1>
           <p className="mt-2 text-foreground/70">
             Esto solo es la primera vez. Después Leo no verá esta pantalla.

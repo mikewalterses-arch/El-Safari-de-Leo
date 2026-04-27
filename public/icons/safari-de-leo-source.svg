@@ -1,14 +1,49 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Placeholder de fase 1. Sustituir en fase 5/6 por el logo real del león. -->
-  <rect width="512" height="512" fill="#7DD3C7"/>
-  <text
-    x="50%"
-    y="54%"
-    font-family="Nunito, ui-sans-serif, system-ui, sans-serif"
-    font-weight="800"
-    font-size="320"
-    fill="#3D2B1F"
-    text-anchor="middle"
-    dominant-baseline="middle"
-  >L</text>
+  <!-- Logo del Safari de Leo: león geométrico tipo sunburst.
+       Estilo: moderno minimalista (no Disney/cartoon).
+       Paleta de marca: turquesa fondo, melena coral, cara crema, rayos amarillo crema. -->
+
+  <!-- Fondo turquesa con esquinas redondeadas para PWAs no-maskable -->
+  <rect width="512" height="512" rx="96" fill="#7DD3C7"/>
+
+  <!-- Sunburst de 8 rayos amarillo crema, intercalados con 8 rayos coral -->
+  <g transform="translate(256 256)">
+    <!-- Rayos amarillo crema (orientaciones 0, 45, 90, 135, 180, 225, 270, 315) -->
+    <g fill="#FFE5A0">
+      <polygon points="0,-225 -22,-160 22,-160"/>
+      <polygon points="0,-225 -22,-160 22,-160" transform="rotate(45)"/>
+      <polygon points="0,-225 -22,-160 22,-160" transform="rotate(90)"/>
+      <polygon points="0,-225 -22,-160 22,-160" transform="rotate(135)"/>
+      <polygon points="0,-225 -22,-160 22,-160" transform="rotate(180)"/>
+      <polygon points="0,-225 -22,-160 22,-160" transform="rotate(225)"/>
+      <polygon points="0,-225 -22,-160 22,-160" transform="rotate(270)"/>
+      <polygon points="0,-225 -22,-160 22,-160" transform="rotate(315)"/>
+    </g>
+  </g>
+
+  <!-- Melena coral -->
+  <circle cx="256" cy="258" r="148" fill="#FF9B85"/>
+
+  <!-- Cara crema -->
+  <circle cx="256" cy="266" r="100" fill="#FFF9F2"/>
+
+  <!-- Mejillas suaves (más amarillo crema, baja opacidad) -->
+  <ellipse cx="218" cy="290" rx="22" ry="13" fill="#FFE5A0" opacity="0.55"/>
+  <ellipse cx="294" cy="290" rx="22" ry="13" fill="#FFE5A0" opacity="0.55"/>
+
+  <!-- Ojos -->
+  <circle cx="222" cy="252" r="11" fill="#3D2B1F"/>
+  <circle cx="290" cy="252" r="11" fill="#3D2B1F"/>
+
+  <!-- Reflejos en ojos -->
+  <circle cx="225" cy="248" r="3.5" fill="#FFF9F2"/>
+  <circle cx="293" cy="248" r="3.5" fill="#FFF9F2"/>
+
+  <!-- Nariz redondeada estilo gato -->
+  <path d="M 238 285 Q 256 280 274 285 Q 274 300 256 316 Q 238 300 238 285 Z" fill="#3D2B1F"/>
+
+  <!-- Boca: línea vertical + dos curvas que forman la Y invertida típica de felino -->
+  <line x1="256" y1="316" x2="256" y2="332" stroke="#3D2B1F" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 256 332 Q 240 342 226 332" stroke="#3D2B1F" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 256 332 Q 272 342 286 332" stroke="#3D2B1F" stroke-width="5" fill="none" stroke-linecap="round"/>
 </svg>

@@ -8,7 +8,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { Plus, Trash2, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Sparkles, HelpCircle } from 'lucide-react';
 import { useAnimals } from '@/features/animals/useAnimals';
 import { useSightings } from '@/features/sightings/useSightings';
 import { AchievementsSection } from '@/features/achievements/AchievementsSection';
@@ -115,6 +115,8 @@ export function Profile() {
       <LanguageSection />
 
       <ViewIntroLink />
+
+      <HelpLink />
 
       <ChangeUserSection />
 
@@ -426,6 +428,19 @@ function ViewIntroLink() {
           {t('profile.viewIntroToday')}
         </span>
       )}
+    </Link>
+  );
+}
+
+function HelpLink() {
+  const t = useT();
+  return (
+    <Link
+      to="/ayuda"
+      className="flex w-full items-center justify-center gap-2 rounded-button border border-foreground/15 bg-cream py-3 text-sm font-semibold text-foreground/80 transition-colors hover:border-primary"
+    >
+      <HelpCircle className="h-4 w-4" strokeWidth={2.5} />
+      {t('profile.help')}
     </Link>
   );
 }

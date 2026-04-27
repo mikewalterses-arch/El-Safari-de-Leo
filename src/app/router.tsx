@@ -34,6 +34,9 @@ const NearbyDetail = lazy(() =>
     default: m.NearbyDetail,
   })),
 );
+const Help = lazy(() =>
+  import('@/pages/Help/Help').then((m) => ({ default: m.Help })),
+);
 
 export const router = createBrowserRouter([
   {
@@ -50,6 +53,7 @@ export const router = createBrowserRouter([
       { path: 'sighting/:sightingId/edit', element: <SightingEdit /> },
       { path: 'cerca/:taxonId', element: <NearbyDetail /> },
       { path: 'intro', element: <Intro /> },
+      { path: 'ayuda', element: <Help /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

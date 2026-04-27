@@ -197,6 +197,7 @@ const es: Messages = {
   'profile.viewIntro': 'Mostrar la intro de la app',
   'profile.viewIntroNamed': 'Mostrar la intro a {name}',
   'profile.viewIntroToday': '¡Hoy!',
+  'profile.help': 'Cómo funciona la app',
   'animal.yourPhoto': 'Tu foto',
 
   // Descubrimiento
@@ -473,6 +474,7 @@ const eu: Messages = {
   'profile.viewIntro': 'Aplikazioaren sarrera erakutsi',
   'profile.viewIntroNamed': '{name}-(r)i sarrera erakutsi',
   'profile.viewIntroToday': 'Gaur!',
+  'profile.help': 'Nola funtzionatzen du',
   'animal.yourPhoto': 'Zure argazkia',
 
   // Aurkikuntza

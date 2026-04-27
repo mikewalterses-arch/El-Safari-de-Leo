@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from '@/app/router';
 import { Onboarding } from '@/pages/Onboarding/Onboarding';
@@ -8,6 +8,10 @@ import { useUserTypeStore } from '@/features/auth/userType';
 import { useAuth } from '@/features/auth/useAuth';
 
 const ONBOARDING_KEY = 'safarideleo:onboardingCompleted';
+
+const Discover = lazy(() =>
+  import('@/pages/Discover/Discover').then((m) => ({ default: m.Discover })),
+);
 
 export function App() {
   const userType = useUserTypeStore((s) => s.userType);
@@ -19,6 +23,15 @@ export function App() {
   // vez) saltamos el onboarding del cumpleaños — ese flujo es específico de
   // Leo. Detectamos "recién creado" comparando creationTime con lastSignInTime.
   useAutoSkipOnboardingForNewUsers(setCompleted);
+
+  // Landing pública /conoce: no pasa por WhoAreYou ni AuthGate.
+  if (window.location.pathname.startsWith('/conoce')) {
+    return (
+      <Suspense fallback={<LandingFallback />}>
+        <Discover />
+      </Suspense>
+    );
+  }
 
   if (!userType) {
     return <WhoAreYou />;
@@ -37,6 +50,17 @@ export function App() {
         <RouterProvider router={router} />
       )}
     </AuthGate>
+  );
+}
+
+function LandingFallback() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-surface">
+      <span
+        aria-label="Cargando"
+        className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"
+      />
+    </div>
   );
 }
 

@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Compass, Sparkles } from 'lucide-react';
 import { fetchNearbySpecies, type NearbySpecies } from '@/lib/inaturalist';
+import { haversineKm } from '@/lib/geo';
+import { useSightings } from '@/features/sightings/useSightings';
 import { useLocaleStore, useT } from '@/i18n';
 
 const CACHE_KEY = 'safarideleo:nearbyCache';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-const MOVED_THRESHOLD_DEG = 0.05; // ≈5.5 km, refrescamos si se mueve más
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const MOVED_THRESHOLD_DEG = 0.05;
+
+const NEW_PLACE_THRESHOLD_KM = 5;
 
 interface NearbyCache {
   lat: number;
@@ -45,6 +50,7 @@ export function Home() {
   return (
     <div className="space-y-6">
       <Greeting />
+      <NewPlaceBanner />
       <NearbyAnimals />
     </div>
   );
@@ -57,6 +63,69 @@ function Greeting() {
       <h2 className="text-2xl font-extrabold">{t('home.greeting')}</h2>
       <p className="mt-1 text-foreground/60">{t('home.subgreeting')}</p>
     </div>
+  );
+}
+
+/**
+ * Modo aventura: cuando Leo está a más de 5 km de cualquier avistamiento previo,
+ * aparece un banner animado celebrando que está en sitio nuevo.
+ */
+function NewPlaceBanner() {
+  const t = useT();
+  const { sightings } = useSightings();
+  const [isNewPlace, setIsNewPlace] = useState(false);
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) return;
+    const valid = sightings.filter(
+      (s) => s.location && (s.location.lat !== 0 || s.location.lng !== 0),
+    );
+    if (valid.length === 0) return;
+
+    let cancelled = false;
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        if (cancelled) return;
+        const { latitude, longitude } = p.coords;
+        const minDist = Math.min(
+          ...valid.map((s) =>
+            haversineKm(latitude, longitude, s.location.lat, s.location.lng),
+          ),
+        );
+        setIsNewPlace(minDist > NEW_PLACE_THRESHOLD_KM);
+      },
+      () => {
+        /* Permiso denegado: ocultamos banner */
+      },
+      { timeout: 10_000, maximumAge: 60_000 },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sightings]);
+
+  if (!isNewPlace) return null;
+
+  return (
+    <motion.section
+      initial={{ scale: 0.96, opacity: 0, y: -8 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+      className="rounded-card border-2 border-primary bg-gradient-to-br from-primary/20 to-accent/15 p-4"
+    >
+      <div className="flex items-center gap-3">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-foreground shadow-card">
+          <Compass className="h-6 w-6" strokeWidth={2.5} />
+        </span>
+        <div className="min-w-0">
+          <h3 className="text-base font-extrabold">{t('home.newPlace.title')}</h3>
+          <p className="mt-0.5 text-sm text-foreground/70">
+            {t('home.newPlace.subtitle')}
+          </p>
+        </div>
+      </div>
+    </motion.section>
   );
 }
 

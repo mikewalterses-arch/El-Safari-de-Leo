@@ -38,6 +38,8 @@ const es: Messages = {
   'home.nearbyDenied': 'Activa la ubicación para ver qué animales hay cerca.',
   'home.nearbyError': 'No pude consultar ahora. Inténtalo más tarde.',
   'home.nearbyEmpty': 'No hay observaciones recientes registradas en esta zona.',
+  'home.newPlace.title': '¡Sitio nuevo!',
+  'home.newPlace.subtitle': '¿Qué animales crees que verás aquí?',
 
   // Mapa
   'map.title': 'Mapa',
@@ -155,6 +157,8 @@ const eu: Messages = {
   'home.nearbyDenied': 'Kokapena gaitu inguruan zer animalia dauden ikusteko.',
   'home.nearbyError': 'Ezin izan dut kontsultatu. Saiatu beranduago.',
   'home.nearbyEmpty': 'Ez dago inguru honetan azken behaketarik.',
+  'home.newPlace.title': 'Leku berria!',
+  'home.newPlace.subtitle': 'Zer animalia ikusiko dituzula uste duzu hemen?',
 
   // Mapa
   'map.title': 'Mapa',

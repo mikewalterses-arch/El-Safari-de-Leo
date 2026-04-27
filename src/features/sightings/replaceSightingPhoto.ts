@@ -8,8 +8,7 @@ import { db, storage } from '@/lib/firebase';
 import { processPhoto } from './compressImage';
 
 /**
- * Reemplaza la foto + thumbnail de un avistamiento existente. Sobrescribe los
- * archivos en Storage y actualiza las URLs en el doc de Firestore.
+ * Reemplaza la foto + thumbnail de un avistamiento existente del usuario uid.
  */
 export async function replaceSightingPhoto(
   sightingId: string,
@@ -30,5 +29,8 @@ export async function replaceSightingPhoto(
     ),
   ]);
 
-  await updateDoc(doc(db, 'sightings', sightingId), { photoUrl, thumbnailUrl });
+  await updateDoc(doc(db, 'users', uid, 'sightings', sightingId), {
+    photoUrl,
+    thumbnailUrl,
+  });
 }

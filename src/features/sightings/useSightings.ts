@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useFirestoreStore, type SightingDoc } from '@/stores/firestoreStore';
+import { useAuth } from '@/features/auth/useAuth';
 
 export type { SightingDoc };
 
@@ -8,13 +9,16 @@ interface UseSightingsState {
   loading: boolean;
 }
 
-/** Wrapper fino del store global. La subscripción se inicia la primera vez que se llama. */
+/** Wrapper del store global: subscribe a sightings del usuario actual. */
 export function useSightings(): UseSightingsState {
+  const { user } = useAuth();
   const start = useFirestoreStore((s) => s.startSightings);
   const sightings = useFirestoreStore((s) => s.sightings);
   const loading = useFirestoreStore((s) => s.sightingsLoading);
+
   useEffect(() => {
-    start();
-  }, [start]);
+    if (user) start(user.uid);
+  }, [user, start]);
+
   return { sightings, loading };
 }

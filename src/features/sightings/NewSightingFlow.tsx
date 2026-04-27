@@ -25,12 +25,14 @@ export function NewSightingFlow() {
 
   const [step, setStep] = useState<Step>('photo');
   const [photo, setPhoto] = useState<File | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [animal, setAnimal] = useState<AnimalSearchResult | null>(null);
   const [animalId, setAnimalId] = useState<string | null>(null);
   const [location, setLocation] = useState<SightingLocation | null>(null);
   const [notes, setNotes] = useState('');
   const [attributes, setAttributes] = useState<SightingAttributes>({});
   const [error, setError] = useState<string | null>(null);
+  const [identifyError, setIdentifyError] = useState<string | null>(null);
   const [isFirstDiscovery, setIsFirstDiscovery] = useState(false);
 
   useEffect(() => {
@@ -48,13 +50,16 @@ export function NewSightingFlow() {
   const onAnimalSelected = async (result: AnimalSearchResult) => {
     setAnimal(result);
     setError(null);
+    setIdentifyError(null);
     setStep('caching');
     try {
       const id = await ensureAnimal(result);
       setAnimalId(id);
       setStep('confirm');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo cargar el animal');
+      console.error('ensureAnimal failed', err);
+      const message = err instanceof Error ? err.message : 'No se pudo cargar el animal';
+      setIdentifyError(message);
       setStep('identify');
     }
   };
@@ -76,6 +81,7 @@ export function NewSightingFlow() {
       setIsFirstDiscovery(result.isFirstDiscovery);
       setStep('done');
     } catch (err) {
+      console.error('createSighting failed', err);
       setError(err instanceof Error ? err.message : 'No se pudo guardar');
       setStep('confirm');
     }
@@ -92,7 +98,14 @@ export function NewSightingFlow() {
     return <PhotoCaptureStep onPhotoSelected={onPhotoSelected} />;
   }
   if (step === 'identify') {
-    return <IdentifyStep onAnimalSelected={onAnimalSelected} />;
+    return (
+      <IdentifyStep
+        query={searchQuery}
+        onQueryChange={setSearchQuery}
+        onAnimalSelected={onAnimalSelected}
+        error={identifyError}
+      />
+    );
   }
   if (step === 'caching') {
     return <FlowStateMessage label={t('newSighting.caching')} spinning />;

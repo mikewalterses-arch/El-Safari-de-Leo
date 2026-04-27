@@ -1,22 +1,17 @@
 rules_version = '2';
 
-// El Safari de Leo — auth anónimo. Cualquier usuario autenticado (incluido
-// el anónimo) puede leer y escribir cualquier archivo del bucket.
+// El Safari de Leo — multi-usuario.
+// Cada familia escribe sus fotos bajo sightings/{uid}/... y solo el owner accede.
 
 service firebase.storage {
   match /b/{bucket}/o {
 
-    function isAuthenticated() {
-      return request.auth != null;
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
     }
 
-    match /{allPaths=**} {
-      allow read, write: if isAuthenticated();
+    match /sightings/{uid}/{allPaths=**} {
+      allow read, write: if isOwner(uid);
     }
-
-    // TODO(post-cumple): si quieres endurecer, añadir límite de tamaño:
-    //   match /sightings/{uid}/{file=**} {
-    //     allow write: if isAuthenticated() && request.resource.size < 5 * 1024 * 1024;
-    //   }
   }
 }

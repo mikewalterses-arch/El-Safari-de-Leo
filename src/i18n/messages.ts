@@ -116,6 +116,13 @@ const es: Messages = {
   'profile.taxonomyEmpty': 'Cuando hagas avistamientos, aquí verás un gráfico con los tipos de animales que has visto (mamíferos, aves, reptiles...).',
   'profile.languageTitle': 'Idioma',
   'profile.achievementsTitle': 'Logros',
+  'profile.kidTitle': 'Datos del peque',
+  'profile.kidName': 'Nombre',
+  'profile.kidBirthDate': 'Fecha de nacimiento',
+  'profile.kidColor': 'Color del avatar',
+  'profile.edit': 'Editar',
+  'profile.save': 'Guardar',
+  'profile.signOut': 'Cerrar sesión',
 
   // Descubrimiento
   'discovery.title': '¡Nuevo descubrimiento!',
@@ -278,6 +285,13 @@ const eu: Messages = {
   'profile.taxonomyEmpty': 'Behaketak egiten dituzunean, hemen ikusiko duzu zer animalia mota ikusi dituzun (ugaztunak, hegaztiak, narrastiak...).',
   'profile.languageTitle': 'Hizkuntza',
   'profile.achievementsTitle': 'Lorpenak',
+  'profile.kidTitle': 'Umearen datuak',
+  'profile.kidName': 'Izena',
+  'profile.kidBirthDate': 'Jaiotze-data',
+  'profile.kidColor': 'Avatar kolorea',
+  'profile.edit': 'Editatu',
+  'profile.save': 'Gorde',
+  'profile.signOut': 'Saioa itxi',
 
   // Aurkikuntza
   'discovery.title': 'Aurkikuntza berria!',

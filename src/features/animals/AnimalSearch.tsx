@@ -5,13 +5,19 @@ import { useLocaleStore, useT } from '@/i18n';
 import type { AnimalSearchResult } from '@/types/models';
 
 interface AnimalSearchProps {
+  query: string;
+  onQueryChange: (q: string) => void;
   onSelect: (result: AnimalSearchResult) => void;
 }
 
-export function AnimalSearch({ onSelect }: AnimalSearchProps) {
+/**
+ * Búsqueda de animales con iNaturalist. La query se controla desde fuera
+ * (NewSightingFlow) para que el texto del input persista cuando se vuelve
+ * a esta pantalla tras un fallo en el caching.
+ */
+export function AnimalSearch({ query, onQueryChange, onSelect }: AnimalSearchProps) {
   const t = useT();
   const locale = useLocaleStore((s) => s.locale);
-  const [query, setQuery] = useState('');
   const [results, setResults] = useState<AnimalSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +35,8 @@ export function AnimalSearch({ onSelect }: AnimalSearchProps) {
         .then((r) => {
           if (!cancelled) setResults(r);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error('searchAnimalTaxa failed', err);
           if (!cancelled) setError(t('newSighting.searchError'));
         })
         .finally(() => {
@@ -55,7 +62,7 @@ export function AnimalSearch({ onSelect }: AnimalSearchProps) {
             autoFocus
             placeholder={t('newSighting.searchPlaceholder')}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => onQueryChange(e.target.value)}
             className="w-full rounded-button border border-foreground/15 bg-cream py-3 pl-10 pr-4 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>

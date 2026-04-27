@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Cell,
   Pie,
@@ -11,6 +11,9 @@ import { useAnimals } from '@/features/animals/useAnimals';
 import { useSightings } from '@/features/sightings/useSightings';
 import { AchievementsSection } from '@/features/achievements/AchievementsSection';
 import { useUserTypeStore } from '@/features/auth/userType';
+import { useUserProfile } from '@/features/user/useUserProfile';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
 import {
   LOCALE_NAMES,
   SUPPORTED_LOCALES,
@@ -27,6 +30,13 @@ const CHART_COLORS = [
   '#9CC0BD',
   '#D9A28A',
   '#A0B8E0',
+];
+
+const AVATAR_COLORS = [
+  { id: '#7DD3C7', name: 'Turquesa' },
+  { id: '#FF9B85', name: 'Coral' },
+  { id: '#FFE5A0', name: 'Amarillo' },
+  { id: '#B8E0A0', name: 'Verde' },
 ];
 
 export function Profile() {
@@ -57,6 +67,8 @@ export function Profile() {
     <div className="space-y-6">
       <h2 className="text-2xl font-extrabold">{t('profile.title')}</h2>
 
+      <KidInfoSection />
+
       <div className="grid grid-cols-3 gap-3">
         <StatCard label={t('profile.statsAvistamientos')} value={totalSightings} />
         <StatCard label={t('profile.statsAnimales')} value={uniqueAnimals} />
@@ -83,10 +95,7 @@ export function Profile() {
                   innerRadius={40}
                 >
                   {taxonomyData.map((_, idx) => (
-                    <Cell
-                      key={idx}
-                      fill={CHART_COLORS[idx % CHART_COLORS.length]}
-                    />
+                    <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -107,21 +116,9 @@ export function Profile() {
       <LanguageSection />
 
       <ChangeUserSection />
-    </div>
-  );
-}
 
-function ChangeUserSection() {
-  const t = useT();
-  const clearUserType = useUserTypeStore((s) => s.clear);
-  return (
-    <button
-      type="button"
-      onClick={clearUserType}
-      className="w-full rounded-button border border-foreground/15 bg-cream py-3 text-sm font-semibold text-foreground/70 transition-colors hover:border-primary"
-    >
-      {t('profile.changeUser')}
-    </button>
+      <SignOutSection />
+    </div>
   );
 }
 
@@ -131,6 +128,141 @@ function StatCard({ label, value }: { label: string; value: number }) {
       <p className="text-3xl font-extrabold text-primary">{value}</p>
       <p className="mt-1 text-xs font-semibold text-foreground/60">{label}</p>
     </div>
+  );
+}
+
+function KidInfoSection() {
+  const t = useT();
+  const { profile, update } = useUserProfile();
+  const [name, setName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [color, setColor] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!profile || editing) return;
+    setName(profile.displayName);
+    setColor(profile.avatarColor);
+    const d = profile.birthDate?.toDate();
+    setBirthDate(d ? d.toISOString().slice(0, 10) : '');
+  }, [profile, editing]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await update({
+        displayName: name.trim() || profile?.displayName,
+        birthDate: birthDate ? new Date(birthDate) : undefined,
+        avatarColor: color,
+      });
+      setEditing(false);
+    } catch (err) {
+      console.error('update profile failed', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!profile) return null;
+
+  return (
+    <section className="rounded-card border border-foreground/10 bg-cream p-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-extrabold">{t('profile.kidTitle')}</h3>
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-sm font-semibold text-primary"
+          >
+            {t('profile.edit')}
+          </button>
+        )}
+      </div>
+
+      {!editing ? (
+        <div className="mt-2 flex items-center gap-3">
+          <span
+            className="flex h-12 w-12 items-center justify-center rounded-full font-extrabold text-foreground"
+            style={{ background: profile.avatarColor }}
+          >
+            {profile.displayName.charAt(0).toUpperCase()}
+          </span>
+          <div>
+            <p className="font-extrabold">{profile.displayName}</p>
+            {profile.birthDate && (
+              <p className="text-xs text-foreground/60">
+                {profile.birthDate.toDate().toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 space-y-3">
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold text-foreground/60">
+              {t('profile.kidName')}
+            </span>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-button border border-foreground/15 bg-surface px-3 py-2 text-base focus:border-primary focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold text-foreground/60">
+              {t('profile.kidBirthDate')}
+            </span>
+            <input
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              className="w-full rounded-button border border-foreground/15 bg-surface px-3 py-2 text-base focus:border-primary focus:outline-none"
+            />
+          </label>
+          <div>
+            <p className="mb-1 text-xs font-semibold text-foreground/60">
+              {t('profile.kidColor')}
+            </p>
+            <div className="flex gap-2">
+              {AVATAR_COLORS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setColor(c.id)}
+                  aria-label={c.name}
+                  className={cn(
+                    'h-10 w-10 rounded-full border-2 transition-transform',
+                    color === c.id ? 'border-foreground scale-110' : 'border-foreground/15',
+                  )}
+                  style={{ background: c.id }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              disabled={saving}
+              className="flex-1 rounded-button border border-foreground/20 py-2 text-sm font-semibold disabled:opacity-50"
+            >
+              {t('diary.noteCancel')}
+            </button>
+            <button
+              type="button"
+              onClick={save}
+              disabled={saving}
+              className="flex-[2] rounded-button bg-accent py-2 text-sm font-extrabold text-foreground shadow-soft disabled:opacity-50"
+            >
+              {saving ? '...' : t('profile.save')}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -160,5 +292,32 @@ function LanguageSection() {
         ))}
       </div>
     </section>
+  );
+}
+
+function ChangeUserSection() {
+  const t = useT();
+  const clearUserType = useUserTypeStore((s) => s.clear);
+  return (
+    <button
+      type="button"
+      onClick={clearUserType}
+      className="w-full rounded-button border border-foreground/15 bg-cream py-3 text-sm font-semibold text-foreground/70 transition-colors hover:border-primary"
+    >
+      {t('profile.changeUser')}
+    </button>
+  );
+}
+
+function SignOutSection() {
+  const t = useT();
+  return (
+    <button
+      type="button"
+      onClick={() => signOut(auth)}
+      className="w-full rounded-button border border-coral/30 bg-coral/5 py-3 text-sm font-semibold text-coral"
+    >
+      {t('profile.signOut')}
+    </button>
   );
 }

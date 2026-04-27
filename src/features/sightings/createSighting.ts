@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  doc,
   getDocs,
   limit,
   query,
@@ -36,7 +37,7 @@ const EMPTY_LOCATION: SightingLocation = { lat: 0, lng: 0, placeName: '' };
 export async function createSighting(
   input: CreateSightingInput,
 ): Promise<CreateSightingResult> {
-  const isFirstDiscovery = await checkFirstDiscovery(input.animalId);
+  const isFirstDiscovery = await checkFirstDiscovery(input.uid, input.animalId);
   const { original, thumbnail } = await processPhoto(input.photo);
 
   const docData: Record<string, unknown> = {
@@ -53,7 +54,10 @@ export async function createSighting(
     docData.attributes = input.attributes;
   }
 
-  const docRef = await addDoc(collection(db, 'sightings'), docData);
+  const docRef = await addDoc(
+    collection(db, 'users', input.uid, 'sightings'),
+    docData,
+  );
 
   const photoPath = `sightings/${input.uid}/${docRef.id}/photo.jpg`;
   const thumbPath = `sightings/${input.uid}/${docRef.id}/thumb.jpg`;
@@ -67,7 +71,10 @@ export async function createSighting(
     ),
   ]);
 
-  await updateDoc(docRef, { photoUrl, thumbnailUrl });
+  await updateDoc(
+    doc(db, 'users', input.uid, 'sightings', docRef.id),
+    { photoUrl, thumbnailUrl },
+  );
   return { id: docRef.id, isFirstDiscovery };
 }
 
@@ -75,9 +82,12 @@ function hasAttributes(a: SightingAttributes): boolean {
   return Boolean(a.size || a.color || a.activity);
 }
 
-async function checkFirstDiscovery(animalId: string): Promise<boolean> {
+async function checkFirstDiscovery(
+  uid: string,
+  animalId: string,
+): Promise<boolean> {
   const q = query(
-    collection(db, 'sightings'),
+    collection(db, 'users', uid, 'sightings'),
     where('animalId', '==', animalId),
     limit(1),
   );

@@ -1,21 +1,39 @@
 rules_version = '2';
 
-// El Safari de Leo — auth anónimo, sin login visible.
-// Cualquier usuario autenticado (incluido el anónimo) puede leer y escribir
-// cualquier documento. La URL no es pública, así que el acceso por descubrimiento
-// es muy improbable. Si en algún momento se quiere endurecer, alternativas:
-//  - Volver al modelo UID-fijo: `request.auth.uid == 'XXXXX'`
-//  - Refactorizar a `users/{uid}/...` y `request.auth.uid == uid`
+// El Safari de Leo — multi-usuario.
+// Cada familia tiene un usuario (auth) y datos aislados bajo users/{uid}/...
+// El catálogo de animales (cache de Wikipedia) es compartido en /animals/*
+// para que el cache aproveche entre familias (la info viene de Wikipedia
+// pública, no es privada).
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
 
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    match /{document=**} {
+    // Catálogo compartido de animales (cache de Wikipedia/Wikidata).
+    // Cualquier usuario autenticado puede leer y escribir (cachear).
+    match /animals/{animalId} {
       allow read, write: if isAuthenticated();
+    }
+
+    // Datos privados por usuario: sightings, notes, perfil.
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /sightings/{sightingId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /notes/{noteId} {
+        allow read, write: if isOwner(uid);
+      }
     }
   }
 }

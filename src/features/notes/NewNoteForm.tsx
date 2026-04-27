@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useT } from '@/i18n';
+import { useAuth } from '@/features/auth/useAuth';
 import { createNote } from './createNote';
 
 interface NewNoteFormProps {
@@ -8,16 +9,17 @@ interface NewNoteFormProps {
 
 export function NewNoteForm({ onClose }: NewNoteFormProps) {
   const t = useT();
+  const { user } = useAuth();
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || !user) return;
     setSubmitting(true);
     setError(null);
     try {
-      await createNote(text);
+      await createNote(user.uid, text);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Algo falló');

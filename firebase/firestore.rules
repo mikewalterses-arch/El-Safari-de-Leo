@@ -1,23 +1,21 @@
 rules_version = '2';
 
-// El Safari de Leo — single-owner.
-// Solo el UID admin (Mikel) puede leer/escribir cualquier doc.
-// Las rules NO leen variables de entorno; el UID va hardcodeado.
+// El Safari de Leo — auth anónimo, sin login visible.
+// Cualquier usuario autenticado (incluido el anónimo) puede leer y escribir
+// cualquier documento. La URL no es pública, así que el acceso por descubrimiento
+// es muy improbable. Si en algún momento se quiere endurecer, alternativas:
+//  - Volver al modelo UID-fijo: `request.auth.uid == 'XXXXX'`
+//  - Refactorizar a `users/{uid}/...` y `request.auth.uid == uid`
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAdmin() {
-      return request.auth != null
-          && request.auth.uid == 'Yhpn5HCgczcDvsnxXKylxzTe4sz2';
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
     match /{document=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAuthenticated();
     }
-
-    // TODO(fase-2): si decidimos que el catálogo `animals/*` sea público en lectura
-    // (para que la PWA cargue el catálogo antes del login), añadir aquí una regla
-    // específica `match /animals/{id} { allow read: if true; }` por encima del wildcard.
   }
 }

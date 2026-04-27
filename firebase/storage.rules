@@ -1,23 +1,22 @@
 rules_version = '2';
 
-// El Safari de Leo — single-owner.
-// Solo el UID admin (Mikel) puede subir/descargar archivos.
+// El Safari de Leo — auth anónimo. Cualquier usuario autenticado (incluido
+// el anónimo) puede leer y escribir cualquier archivo del bucket.
 
 service firebase.storage {
   match /b/{bucket}/o {
 
-    function isAdmin() {
-      return request.auth != null
-          && request.auth.uid == 'Yhpn5HCgczcDvsnxXKylxzTe4sz2';
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
     match /{allPaths=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAuthenticated();
     }
 
-    // TODO(fase-2): si fotos crecen mucho, añadir reglas por path con límite de tamaño:
-    //   match /sightings/{sightingId}/{file=**} {
-    //     allow write: if isAdmin() && request.resource.size < 5 * 1024 * 1024;
+    // TODO(post-cumple): si quieres endurecer, añadir límite de tamaño:
+    //   match /sightings/{uid}/{file=**} {
+    //     allow write: if isAuthenticated() && request.resource.size < 5 * 1024 * 1024;
     //   }
   }
 }

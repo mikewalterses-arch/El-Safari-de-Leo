@@ -1,17 +1,18 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from './useAuth';
-import { LoginScreen } from './LoginScreen';
-import { NeedsPapa } from './NeedsPapa';
-import { useUserTypeStore } from './userType';
 import { ensureUserDoc } from '@/features/user/ensureUserDoc';
 
 interface AuthGateProps {
   children: ReactNode;
 }
 
+/**
+ * Espera a que el usuario anónimo esté firmado y a que `users/{uid}` exista.
+ * Mientras tanto muestra un spinner. No hay login visible — la firma es
+ * automática (ver lib/firebase.ts).
+ */
 export function AuthGate({ children }: AuthGateProps) {
   const { user, loading } = useAuth();
-  const userType = useUserTypeStore((s) => s.userType);
   const [seeded, setSeeded] = useState(false);
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export function AuthGate({ children }: AuthGateProps) {
       });
   }, [user, seeded]);
 
-  if (loading || (user && !seeded)) {
+  if (loading || !user || !seeded) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-surface">
         <span
@@ -33,11 +34,6 @@ export function AuthGate({ children }: AuthGateProps) {
         />
       </div>
     );
-  }
-
-  if (!user) {
-    if (userType === 'leo') return <NeedsPapa />;
-    return <LoginScreen />;
   }
 
   return <>{children}</>;

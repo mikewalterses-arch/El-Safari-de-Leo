@@ -72,8 +72,18 @@ const SKELETON_LABELS: Record<string, Record<Locale, string>> = {
 };
 
 const REPRO_LABELS: Record<string, Record<Locale, string>> = {
-  viviparous: { es: 'Nace vivo', eu: 'Bizirik jaiotzen da' },
-  oviparous: { es: 'Pone huevos', eu: 'Arrautzak jartzen ditu' },
+  // Vivíparo = el embrión se desarrolla dentro del cuerpo de la madre y nace
+  // ya formado (mayoría de mamíferos).
+  viviparous: {
+    es: 'Nace del vientre de su madre (vivíparo)',
+    eu: 'Amaren sabeletik jaiotzen da (bizidun)',
+  },
+  // Ovíparo = se desarrolla dentro de un huevo que sale del cuerpo de la madre
+  // y eclosiona fuera. Aves, reptiles, peces, anfibios, insectos.
+  oviparous: {
+    es: 'Nace de un huevo (ovíparo)',
+    eu: 'Arrautza batetik jaiotzen da (errulea)',
+  },
 };
 
 const MOVEMENT_LABELS: Record<string, Record<Locale, string>> = {

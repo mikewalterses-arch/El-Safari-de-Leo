@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Compass, Flame, Sparkles } from 'lucide-react';
-import { fetchNearbySpecies, type NearbySpecies } from '@/lib/inaturalist';
+import {
+  fetchNearbySpecies,
+  nearbyToSearchResult,
+  type NearbySpecies,
+} from '@/lib/inaturalist';
 import { haversineKm } from '@/lib/geo';
 import { useSightings } from '@/features/sightings/useSightings';
 import {
@@ -235,23 +240,26 @@ function NearbyAnimals() {
       {status === 'ok' && species.length > 0 && (
         <ul className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
           {species.map((s) => (
-            <li
-              key={s.taxonId}
-              className="flex flex-col items-center rounded-button border border-foreground/10 bg-surface p-2 text-center"
-            >
-              {s.thumbnailUrl ? (
-                <img
-                  src={s.thumbnailUrl}
-                  alt=""
-                  loading="lazy"
-                  className="h-16 w-16 rounded-button object-cover"
-                />
-              ) : (
-                <div className="h-16 w-16 rounded-button bg-foreground/5" />
-              )}
-              <p className="mt-2 w-full truncate text-xs font-semibold">
-                {s.commonName ?? s.scientificName}
-              </p>
+            <li key={s.taxonId}>
+              <Link
+                to={`/cerca/${s.taxonId}`}
+                state={{ result: nearbyToSearchResult(s) }}
+                className="flex flex-col items-center rounded-button border border-foreground/10 bg-surface p-2 text-center transition-colors hover:border-primary"
+              >
+                {s.thumbnailUrl ? (
+                  <img
+                    src={s.thumbnailUrl}
+                    alt=""
+                    loading="lazy"
+                    className="h-16 w-16 rounded-button object-cover"
+                  />
+                ) : (
+                  <div className="h-16 w-16 rounded-button bg-foreground/5" />
+                )}
+                <p className="mt-2 w-full truncate text-xs font-semibold">
+                  {s.commonName ?? s.scientificName}
+                </p>
+              </Link>
             </li>
           ))}
         </ul>

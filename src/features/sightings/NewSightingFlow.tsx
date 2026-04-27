@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { PhotoCaptureStep } from './PhotoCaptureStep';
 import { IdentifyStep } from './IdentifyStep';
@@ -18,17 +18,24 @@ import type {
 
 type Step = 'photo' | 'identify' | 'caching' | 'confirm' | 'saving' | 'done';
 
+interface PreselectedState {
+  animal?: AnimalSearchResult;
+}
+
 export function NewSightingFlow() {
   const t = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const preselectedAnimal =
+    (location.state as PreselectedState | null)?.animal ?? null;
 
   const [step, setStep] = useState<Step>('photo');
   const [photo, setPhoto] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [animal, setAnimal] = useState<AnimalSearchResult | null>(null);
+  const [animal, setAnimal] = useState<AnimalSearchResult | null>(preselectedAnimal);
   const [animalId, setAnimalId] = useState<string | null>(null);
-  const [location, setLocation] = useState<SightingLocation | null>(null);
+  const [locationData, setLocationData] = useState<SightingLocation | null>(null);
   const [notes, setNotes] = useState('');
   const [attributes, setAttributes] = useState<SightingAttributes>({});
   const [error, setError] = useState<string | null>(null);
@@ -36,18 +43,13 @@ export function NewSightingFlow() {
   const [isFirstDiscovery, setIsFirstDiscovery] = useState(false);
 
   useEffect(() => {
-    if (!photo || location) return;
+    if (!photo || locationData) return;
     getCurrentLocation()
-      .then(setLocation)
+      .then(setLocationData)
       .catch(() => {});
-  }, [photo, location]);
+  }, [photo, locationData]);
 
-  const onPhotoSelected = (file: File) => {
-    setPhoto(file);
-    setStep('identify');
-  };
-
-  const onAnimalSelected = async (result: AnimalSearchResult) => {
+  const cacheSelected = async (result: AnimalSearchResult) => {
     setAnimal(result);
     setError(null);
     setIdentifyError(null);
@@ -58,10 +60,26 @@ export function NewSightingFlow() {
       setStep('confirm');
     } catch (err) {
       console.error('ensureAnimal failed', err);
-      const message = err instanceof Error ? err.message : 'No se pudo cargar el animal';
-      setIdentifyError(message);
+      setIdentifyError(
+        err instanceof Error ? err.message : 'No se pudo cargar el animal',
+      );
       setStep('identify');
     }
+  };
+
+  const onPhotoSelected = (file: File) => {
+    setPhoto(file);
+    if (preselectedAnimal) {
+      // Si vienes de "Cerca de ti", saltamos el paso de identificar — ya
+      // sabemos qué animal es. Pasamos directo al caching.
+      void cacheSelected(preselectedAnimal);
+    } else {
+      setStep('identify');
+    }
+  };
+
+  const onAnimalSelected = (result: AnimalSearchResult) => {
+    void cacheSelected(result);
   };
 
   const onSave = async () => {
@@ -73,7 +91,7 @@ export function NewSightingFlow() {
         uid: user.uid,
         animalId,
         photo,
-        location,
+        location: locationData,
         notes,
         attributes,
       });
@@ -126,7 +144,7 @@ export function NewSightingFlow() {
       <ConfirmStep
         photo={photo}
         animal={animal}
-        location={location}
+        location={locationData}
         notes={notes}
         attributes={attributes}
         onNotesChange={setNotes}

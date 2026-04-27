@@ -29,6 +29,11 @@ const SightingEdit = lazy(() =>
     default: m.SightingEdit,
   })),
 );
+const NearbyDetail = lazy(() =>
+  import('@/pages/NearbyDetail/NearbyDetail').then((m) => ({
+    default: m.NearbyDetail,
+  })),
+);
 
 export const router = createBrowserRouter([
   {
@@ -43,6 +48,7 @@ export const router = createBrowserRouter([
       { path: 'perfil', element: <Profile /> },
       { path: 'animal/:animalId', element: <AnimalDetail /> },
       { path: 'sighting/:sightingId/edit', element: <SightingEdit /> },
+      { path: 'cerca/:taxonId', element: <NearbyDetail /> },
       { path: 'intro', element: <Intro /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],

@@ -123,6 +123,9 @@ const es: Messages = {
   'sightingEdit.title': 'Editar avistamiento',
   'sightingEdit.changePhoto': 'Cambiar foto',
 
+  // Cerca de mí — preview
+  'nearby.makeSighting': 'Hacer avistamiento de este animal',
+
   // Perfil
   'profile.title': 'Perfil',
   'profile.statsAvistamientos': 'Avistamientos',
@@ -373,6 +376,9 @@ const eu: Messages = {
   // Behaketa editatu
   'sightingEdit.title': 'Behaketa editatu',
   'sightingEdit.changePhoto': 'Argazkia aldatu',
+
+  // Hurbilekoak — aurrebista
+  'nearby.makeSighting': 'Animalia honen behaketa egin',
 
   // Profila
   'profile.title': 'Profila',

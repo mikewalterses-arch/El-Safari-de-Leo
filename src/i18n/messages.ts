@@ -106,6 +106,8 @@ const es: Messages = {
   'animal.timesSeen.other': 'Lo has visto {count} veces',
   'animal.changePhoto': 'Cambiar foto',
   'animal.uploading': 'Subiendo...',
+  'animal.delete': 'Borrar',
+  'animal.deleteConfirm': '¿Borrar este avistamiento? No se puede deshacer.',
 
   // Perfil
   'profile.title': 'Perfil',
@@ -148,6 +150,70 @@ const es: Messages = {
   'ach.fiveClasses.desc': '5 tipos distintos.',
   'ach.sevenDays.title': 'Semana de safari',
   'ach.sevenDays.desc': '7 días distintos.',
+
+  // Secciones de logros
+  'ach.section.general': 'General',
+  'ach.section.collection': 'Colección',
+  'ach.section.explorer': 'Explorador',
+  'ach.section.classes': 'Por clase',
+
+  // Subsecciones por clase
+  'ach.class.mammals': 'Mamíferos',
+  'ach.class.birds': 'Aves',
+  'ach.class.reptiles': 'Reptiles',
+  'ach.class.amphibians': 'Anfibios',
+  'ach.class.fish': 'Peces',
+  'ach.class.insects': 'Insectos',
+  'ach.class.arachnids': 'Arácnidos',
+  'ach.class.molluscs': 'Moluscos',
+
+  // Logros por clase — mamíferos
+  'ach.first.mammals.title': 'Primer mamífero',
+  'ach.first.mammals.desc': 'Has visto un mamífero.',
+  'ach.expert.mammals.title': 'Experto en mamíferos',
+  'ach.expert.mammals.desc': '5 mamíferos diferentes.',
+
+  // Aves
+  'ach.first.birds.title': 'Primera ave',
+  'ach.first.birds.desc': 'Has visto un ave.',
+  'ach.expert.birds.title': 'Experto en aves',
+  'ach.expert.birds.desc': '5 aves diferentes.',
+
+  // Reptiles
+  'ach.first.reptiles.title': 'Primer reptil',
+  'ach.first.reptiles.desc': 'Has visto un reptil.',
+  'ach.expert.reptiles.title': 'Experto en reptiles',
+  'ach.expert.reptiles.desc': '3 reptiles diferentes.',
+
+  // Anfibios
+  'ach.first.amphibians.title': 'Primer anfibio',
+  'ach.first.amphibians.desc': 'Has visto un anfibio.',
+  'ach.expert.amphibians.title': 'Experto en anfibios',
+  'ach.expert.amphibians.desc': '3 anfibios diferentes.',
+
+  // Peces
+  'ach.first.fish.title': 'Primer pez',
+  'ach.first.fish.desc': 'Has visto un pez.',
+  'ach.expert.fish.title': 'Experto en peces',
+  'ach.expert.fish.desc': '5 peces diferentes.',
+
+  // Insectos
+  'ach.first.insects.title': 'Primer insecto',
+  'ach.first.insects.desc': 'Has visto un insecto.',
+  'ach.expert.insects.title': 'Experto en insectos',
+  'ach.expert.insects.desc': '5 insectos diferentes.',
+
+  // Arácnidos
+  'ach.first.arachnids.title': 'Primer arácnido',
+  'ach.first.arachnids.desc': 'Has visto un arácnido.',
+  'ach.expert.arachnids.title': 'Experto en arácnidos',
+  'ach.expert.arachnids.desc': '3 arácnidos diferentes.',
+
+  // Moluscos
+  'ach.first.molluscs.title': 'Primer molusco',
+  'ach.first.molluscs.desc': 'Has visto un molusco.',
+  'ach.expert.molluscs.title': 'Experto en moluscos',
+  'ach.expert.molluscs.desc': '3 moluscos diferentes.',
 
   // Quién eres
   'whoAreYou.title': '¿Quién eres?',
@@ -277,6 +343,8 @@ const eu: Messages = {
   'animal.timesSeen.other': '{count} aldiz ikusi duzu',
   'animal.changePhoto': 'Argazkia aldatu',
   'animal.uploading': 'Igotzen...',
+  'animal.delete': 'Ezabatu',
+  'animal.deleteConfirm': 'Behaketa hau ezabatu? Ezin da desegin.',
 
   // Profila
   'profile.title': 'Profila',
@@ -319,6 +387,70 @@ const eu: Messages = {
   'ach.fiveClasses.desc': '5 mota desberdin.',
   'ach.sevenDays.title': 'Safari astea',
   'ach.sevenDays.desc': '7 egun desberdinetan.',
+
+  // Lorpenen sekzioak
+  'ach.section.general': 'Orokorra',
+  'ach.section.collection': 'Bilduma',
+  'ach.section.explorer': 'Esploratzailea',
+  'ach.section.classes': 'Mota',
+
+  // Azpisekzioak motaz
+  'ach.class.mammals': 'Ugaztunak',
+  'ach.class.birds': 'Hegaztiak',
+  'ach.class.reptiles': 'Narrastiak',
+  'ach.class.amphibians': 'Anfibioak',
+  'ach.class.fish': 'Arrainak',
+  'ach.class.insects': 'Intsektuak',
+  'ach.class.arachnids': 'Armiarmak',
+  'ach.class.molluscs': 'Moluskuak',
+
+  // Ugaztunak
+  'ach.first.mammals.title': 'Lehen ugaztuna',
+  'ach.first.mammals.desc': 'Ugaztun bat ikusi duzu.',
+  'ach.expert.mammals.title': 'Ugaztunen aditua',
+  'ach.expert.mammals.desc': '5 ugaztun desberdin.',
+
+  // Hegaztiak
+  'ach.first.birds.title': 'Lehen hegaztia',
+  'ach.first.birds.desc': 'Hegazti bat ikusi duzu.',
+  'ach.expert.birds.title': 'Hegaztien aditua',
+  'ach.expert.birds.desc': '5 hegazti desberdin.',
+
+  // Narrastiak
+  'ach.first.reptiles.title': 'Lehen narrastia',
+  'ach.first.reptiles.desc': 'Narrasti bat ikusi duzu.',
+  'ach.expert.reptiles.title': 'Narrastien aditua',
+  'ach.expert.reptiles.desc': '3 narrasti desberdin.',
+
+  // Anfibioak
+  'ach.first.amphibians.title': 'Lehen anfibioa',
+  'ach.first.amphibians.desc': 'Anfibio bat ikusi duzu.',
+  'ach.expert.amphibians.title': 'Anfibioen aditua',
+  'ach.expert.amphibians.desc': '3 anfibio desberdin.',
+
+  // Arrainak
+  'ach.first.fish.title': 'Lehen arraina',
+  'ach.first.fish.desc': 'Arrain bat ikusi duzu.',
+  'ach.expert.fish.title': 'Arrainen aditua',
+  'ach.expert.fish.desc': '5 arrain desberdin.',
+
+  // Intsektuak
+  'ach.first.insects.title': 'Lehen intsektua',
+  'ach.first.insects.desc': 'Intsektu bat ikusi duzu.',
+  'ach.expert.insects.title': 'Intsektuen aditua',
+  'ach.expert.insects.desc': '5 intsektu desberdin.',
+
+  // Armiarmak
+  'ach.first.arachnids.title': 'Lehen armiarma',
+  'ach.first.arachnids.desc': 'Armiarma bat ikusi duzu.',
+  'ach.expert.arachnids.title': 'Armiarmen aditua',
+  'ach.expert.arachnids.desc': '3 armiarma desberdin.',
+
+  // Moluskuak
+  'ach.first.molluscs.title': 'Lehen moluskua',
+  'ach.first.molluscs.desc': 'Molusku bat ikusi duzu.',
+  'ach.expert.molluscs.title': 'Moluskuen aditua',
+  'ach.expert.molluscs.desc': '3 molusku desberdin.',
 
   // Nor zara
   'whoAreYou.title': 'Nor zara?',

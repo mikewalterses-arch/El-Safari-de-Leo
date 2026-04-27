@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from './useAuth';
-import { useEmailLinkSignIn } from './useEmailLinkSignIn';
 import { LoginScreen } from './LoginScreen';
 import { NeedsPapa } from './NeedsPapa';
 import { useUserTypeStore } from './userType';
@@ -11,7 +10,6 @@ interface AuthGateProps {
 }
 
 export function AuthGate({ children }: AuthGateProps) {
-  useEmailLinkSignIn();
   const { user, loading } = useAuth();
   const userType = useUserTypeStore((s) => s.userType);
   const [seeded, setSeeded] = useState(false);
@@ -38,8 +36,6 @@ export function AuthGate({ children }: AuthGateProps) {
   }
 
   if (!user) {
-    // Sin sesión: papá ve LoginScreen para autenticarse; Leo ve un mensaje
-    // amable diciendo que papá tiene que entrar primero.
     if (userType === 'leo') return <NeedsPapa />;
     return <LoginScreen />;
   }

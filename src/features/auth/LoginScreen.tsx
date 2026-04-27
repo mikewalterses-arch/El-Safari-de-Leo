@@ -1,12 +1,11 @@
 import { useState, type FormEvent } from 'react';
-import { sendSignInLinkToEmail } from 'firebase/auth';
-import { ArrowRight, Check, Mail } from 'lucide-react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { ArrowRight, Lock, Mail } from 'lucide-react';
 import { auth } from '@/lib/firebase';
-import { SIGN_IN_EMAIL_KEY } from './useEmailLinkSignIn';
 
 export function LoginScreen() {
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -15,40 +14,13 @@ export function LoginScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      await sendSignInLinkToEmail(auth, email, {
-        url: window.location.origin,
-        handleCodeInApp: true,
-      });
-      window.localStorage.setItem(SIGN_IN_EMAIL_KEY, email);
-      setSent(true);
+      await signInWithEmailAndPassword(auth, email, password);
+      // AuthGate detecta el cambio en useAuth y muestra la app.
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Algo falló al enviar el email');
-    } finally {
+      setError(friendlyError(err));
       setSubmitting(false);
     }
   };
-
-  if (sent) {
-    return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-surface p-6 text-center">
-        <span className="flex h-24 w-24 items-center justify-center rounded-full bg-success">
-          <Check className="h-12 w-12 text-foreground" strokeWidth={2.5} />
-        </span>
-        <h1 className="mt-8 text-3xl font-extrabold">Revisa tu email</h1>
-        <p className="mt-3 max-w-md text-foreground/70">
-          Te he mandado un link a <strong className="font-extrabold">{email}</strong>.
-          Ábrelo en este iPhone para entrar a la app.
-        </p>
-        <button
-          type="button"
-          onClick={() => setSent(false)}
-          className="mt-8 text-sm font-semibold text-primary underline"
-        >
-          ¿Te equivocaste? Cambiar email
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-surface p-6">
@@ -73,10 +45,27 @@ export function LoginScreen() {
               <input
                 type="email"
                 required
-                autoFocus
+                autoComplete="email"
                 placeholder="papa@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={submitting}
+                className="w-full rounded-button border border-foreground/15 bg-cream py-3 pl-10 pr-4 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+              />
+            </div>
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold">Contraseña</span>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-foreground/40" />
+              <input
+                type="password"
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={submitting}
                 className="w-full rounded-button border border-foreground/15 bg-cream py-3 pl-10 pr-4 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
               />
@@ -87,18 +76,35 @@ export function LoginScreen() {
 
           <button
             type="submit"
-            disabled={submitting || !email}
+            disabled={submitting || !email || !password}
             className="inline-flex w-full items-center justify-center gap-2 rounded-button bg-accent py-3 text-base font-extrabold text-foreground shadow-card disabled:opacity-50"
           >
-            {submitting ? 'Enviando...' : 'Mandarme el link'}
+            {submitting ? 'Entrando...' : 'Entrar'}
             {!submitting && <ArrowRight className="h-5 w-5" strokeWidth={2.5} />}
           </button>
         </form>
 
         <p className="mt-6 text-center text-xs text-foreground/50">
-          Recibirás un link de un solo uso. No hay contraseña que recordar.
+          ¿Olvidaste la contraseña? Cámbiala en Firebase Console → Authentication → Users.
         </p>
       </div>
     </div>
   );
+}
+
+function friendlyError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (msg.includes('invalid-credential') || msg.includes('wrong-password')) {
+    return 'Email o contraseña incorrectos.';
+  }
+  if (msg.includes('user-not-found')) {
+    return 'No encuentro ese usuario.';
+  }
+  if (msg.includes('too-many-requests')) {
+    return 'Demasiados intentos. Espera un poco antes de probar.';
+  }
+  if (msg.includes('network')) {
+    return 'Sin internet. Comprueba tu conexión.';
+  }
+  return msg;
 }

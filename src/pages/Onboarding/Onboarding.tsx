@@ -4,6 +4,7 @@ import {
   Camera,
   Compass,
   Map as MapIcon,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -12,7 +13,7 @@ interface OnboardingProps {
   onComplete: () => void;
 }
 
-type SlideVisual = 'birthday' | 'compass' | 'steps';
+type SlideVisual = 'birthday' | 'compass' | 'family' | 'steps';
 
 interface Slide {
   eyebrow: string;
@@ -38,6 +39,13 @@ const slides: Slide[] = [
     body: 'Una libreta mágica para guardar todos los animales que descubras. En el zoo, en la playa, en el parque, en libros... en cualquier sitio.',
     cta: 'Sigue',
     visual: 'compass',
+  },
+  {
+    eyebrow: 'Importante',
+    title: 'Hazlo con papá',
+    body: 'Esta app es para descubrir animales juntos.\nPídele permiso a papá antes de abrirla.',
+    cta: 'Sigue',
+    visual: 'family',
   },
   {
     eyebrow: '¿Cómo funciona?',
@@ -120,6 +128,13 @@ function SlideArt({ variant }: { variant: SlideVisual }) {
     return (
       <div className="inline-flex h-32 w-32 items-center justify-center rounded-full bg-success shadow-card">
         <Compass className="h-16 w-16 text-foreground" strokeWidth={1.8} />
+      </div>
+    );
+  }
+  if (variant === 'family') {
+    return (
+      <div className="inline-flex h-32 w-32 items-center justify-center rounded-full bg-accent/40 shadow-card">
+        <Users className="h-16 w-16 text-foreground" strokeWidth={1.8} />
       </div>
     );
   }

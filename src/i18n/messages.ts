@@ -40,12 +40,18 @@ const es: Messages = {
   'home.nearbyEmpty': 'No hay observaciones recientes registradas en esta zona.',
   'home.newPlace.title': '¡Sitio nuevo!',
   'home.newPlace.subtitle': '¿Qué animales crees que verás aquí?',
+  'home.streak.one': '1 día seguido haciendo safari',
+  'home.streak.other': '{count} días seguidos haciendo safari',
+  'home.weekSummary': 'Esta semana: {sightings} avistamientos',
+  'home.weekNewAnimals.one': '1 nuevo',
+  'home.weekNewAnimals.other': '{count} nuevos',
 
   // Mapa
   'map.title': 'Mapa',
   'map.empty': 'Cuando hagas tu primer avistamiento con ubicación aparecerá aquí.',
   'map.count.one': '1 avistamiento con ubicación.',
   'map.count.other': '{count} avistamientos con ubicación.',
+  'map.youAreHere': 'Estás aquí',
 
   // Nuevo avistamiento
   'newSighting.takePhotoTitle': 'Hacer foto',
@@ -136,6 +142,7 @@ const es: Messages = {
   'needsPapa.body': 'Papá tiene que entrar primero la primera vez. Pásale la app y dile que pulse "Soy papá".',
   'needsPapa.cta': 'Soy papá',
   'profile.changeUser': 'Cambiar de usuario',
+  'supervision.banner': 'Recuerda: usa esto con papá',
 };
 
 const eu: Messages = {
@@ -159,12 +166,18 @@ const eu: Messages = {
   'home.nearbyEmpty': 'Ez dago inguru honetan azken behaketarik.',
   'home.newPlace.title': 'Leku berria!',
   'home.newPlace.subtitle': 'Zer animalia ikusiko dituzula uste duzu hemen?',
+  'home.streak.one': 'Egun 1 jarraian safarian',
+  'home.streak.other': '{count} egun jarraian safarian',
+  'home.weekSummary': 'Aste honetan: {sightings} behaketa',
+  'home.weekNewAnimals.one': '1 berria',
+  'home.weekNewAnimals.other': '{count} berri',
 
   // Mapa
   'map.title': 'Mapa',
   'map.empty': 'Kokapenarekin lehen behaketa egiten duzunean, hemen agertuko da.',
   'map.count.one': 'Behaketa 1 kokapenarekin.',
   'map.count.other': '{count} behaketa kokapenarekin.',
+  'map.youAreHere': 'Hemen zaude',
 
   // Behaketa berria
   'newSighting.takePhotoTitle': 'Argazkia atera',
@@ -255,6 +268,7 @@ const eu: Messages = {
   'needsPapa.body': 'Aitak sartu behar du lehenik lehen aldian. Eman aplikazioa eta esan "Aita naiz" sakatzeko.',
   'needsPapa.cta': 'Aita naiz',
   'profile.changeUser': 'Erabiltzailez aldatu',
+  'supervision.banner': 'Gogoratu: aitarekin erabili hau',
 };
 
 export const MESSAGES: Record<Locale, Messages> = { es, eu };

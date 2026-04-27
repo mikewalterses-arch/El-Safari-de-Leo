@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Compass, Sparkles } from 'lucide-react';
+import { Compass, Flame, Sparkles } from 'lucide-react';
 import { fetchNearbySpecies, type NearbySpecies } from '@/lib/inaturalist';
 import { haversineKm } from '@/lib/geo';
 import { useSightings } from '@/features/sightings/useSightings';
+import {
+  computeStreak,
+  computeWeeklyStats,
+} from '@/features/sightings/stats';
 import { useLocaleStore, useT } from '@/i18n';
 
 const CACHE_KEY = 'safarideleo:nearbyCache';
@@ -51,6 +55,7 @@ export function Home() {
     <div className="space-y-6">
       <Greeting />
       <NewPlaceBanner />
+      <StatsCard />
       <NearbyAnimals />
     </div>
   );
@@ -126,6 +131,49 @@ function NewPlaceBanner() {
         </div>
       </div>
     </motion.section>
+  );
+}
+
+/**
+ * Tarjeta de hábito: días seguidos + resumen semanal. Solo aparece si hay
+ * algo interesante que decir (racha ≥ 2 o avistamientos en últimos 7 días).
+ */
+function StatsCard() {
+  const t = useT();
+  const { sightings } = useSightings();
+
+  const streak = useMemo(() => computeStreak(sightings), [sightings]);
+  const week = useMemo(() => computeWeeklyStats(sightings), [sightings]);
+
+  if (streak < 2 && week.sightingsCount === 0) return null;
+
+  return (
+    <section className="rounded-card border border-foreground/10 bg-cream p-4">
+      {streak >= 2 && (
+        <div className="flex items-center gap-3">
+          <Flame className="h-6 w-6 shrink-0 text-coral" strokeWidth={2.5} />
+          <p className="text-base font-semibold">
+            {t('home.streak', { count: streak })}
+          </p>
+        </div>
+      )}
+      {week.sightingsCount > 0 && (
+        <p className={streak >= 2 ? 'mt-2 text-sm text-foreground/70' : 'text-sm text-foreground/70'}>
+          {t('home.weekSummary', {
+            sightings: week.sightingsCount,
+            newAnimals: week.newAnimalsCount,
+          })}
+          {week.newAnimalsCount > 0 && (
+            <>
+              {' · '}
+              <span className="font-semibold text-success">
+                {t('home.weekNewAnimals', { count: week.newAnimalsCount })}
+              </span>
+            </>
+          )}
+        </p>
+      )}
+    </section>
   );
 }
 

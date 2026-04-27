@@ -4,6 +4,8 @@ export interface User {
   displayName: string;
   birthDate: Timestamp;
   avatarColor: string;
+  /** Id del icono Lucide del avatar. Si está ausente, fallback a inicial. */
+  avatarIcon?: string;
   createdAt: Timestamp;
   stats: UserStats;
 }

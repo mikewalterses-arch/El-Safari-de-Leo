@@ -13,6 +13,7 @@ import { useSightings } from '@/features/sightings/useSightings';
 import { AchievementsSection } from '@/features/achievements/AchievementsSection';
 import { useUserTypeStore } from '@/features/auth/userType';
 import { useUserProfile } from '@/features/user/useUserProfile';
+import { Avatar, AVATAR_PRESETS } from '@/components/ui/Avatar';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import {
@@ -33,12 +34,6 @@ const CHART_COLORS = [
   '#A0B8E0',
 ];
 
-const AVATAR_COLORS = [
-  { id: '#7DD3C7', name: 'Turquesa' },
-  { id: '#FF9B85', name: 'Coral' },
-  { id: '#FFE5A0', name: 'Amarillo' },
-  { id: '#B8E0A0', name: 'Verde' },
-];
 
 export function Profile() {
   const t = useT();
@@ -140,6 +135,7 @@ function KidInfoSection() {
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [color, setColor] = useState('');
+  const [icon, setIcon] = useState<string | undefined>(undefined);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -147,6 +143,7 @@ function KidInfoSection() {
     if (!profile || editing) return;
     setName(profile.displayName);
     setColor(profile.avatarColor);
+    setIcon(profile.avatarIcon);
     const d = profile.birthDate?.toDate();
     setBirthDate(d ? d.toISOString().slice(0, 10) : '');
   }, [profile, editing]);
@@ -158,6 +155,7 @@ function KidInfoSection() {
         displayName: name.trim() || profile?.displayName,
         birthDate: birthDate ? new Date(birthDate) : undefined,
         avatarColor: color,
+        avatarIcon: icon ?? '',
       });
       setEditing(false);
     } catch (err) {
@@ -186,12 +184,12 @@ function KidInfoSection() {
 
       {!editing ? (
         <div className="mt-2 flex items-center gap-3">
-          <span
-            className="flex h-12 w-12 items-center justify-center rounded-full font-extrabold text-foreground"
-            style={{ background: profile.avatarColor }}
-          >
-            {profile.displayName.charAt(0).toUpperCase()}
-          </span>
+          <Avatar
+            icon={profile.avatarIcon}
+            color={profile.avatarColor}
+            fallbackInitial={profile.displayName.charAt(0)}
+            size={56}
+          />
           <div>
             <p className="font-extrabold">{profile.displayName}</p>
             {profile.birthDate && (
@@ -202,7 +200,7 @@ function KidInfoSection() {
           </div>
         </div>
       ) : (
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 space-y-4">
           <label className="block">
             <span className="mb-1 block text-xs font-semibold text-foreground/60">
               {t('profile.kidName')}
@@ -226,23 +224,36 @@ function KidInfoSection() {
             />
           </label>
           <div>
-            <p className="mb-1 text-xs font-semibold text-foreground/60">
-              {t('profile.kidColor')}
+            <p className="mb-2 text-xs font-semibold text-foreground/60">
+              {t('profile.kidAvatar')}
             </p>
-            <div className="flex gap-2">
-              {AVATAR_COLORS.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setColor(c.id)}
-                  aria-label={c.name}
-                  className={cn(
-                    'h-10 w-10 rounded-full border-2 transition-transform',
-                    color === c.id ? 'border-foreground scale-110' : 'border-foreground/15',
-                  )}
-                  style={{ background: c.id }}
-                />
-              ))}
+            <div className="grid grid-cols-5 gap-2">
+              {AVATAR_PRESETS.map((preset) => {
+                const selected = preset.icon === icon && preset.color === color;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setIcon(preset.icon);
+                      setColor(preset.color);
+                    }}
+                    aria-label={preset.id}
+                    className={cn(
+                      'flex aspect-square items-center justify-center rounded-full border-2 transition-transform',
+                      selected
+                        ? 'border-foreground scale-105'
+                        : 'border-transparent',
+                    )}
+                  >
+                    <Avatar
+                      icon={preset.icon}
+                      color={preset.color}
+                      size={48}
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div className="flex gap-3 pt-2">

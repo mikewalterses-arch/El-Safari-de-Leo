@@ -8,6 +8,7 @@ interface UpdateProfileChanges {
   displayName?: string;
   birthDate?: Date;
   avatarColor?: string;
+  avatarIcon?: string;
 }
 
 export function useUserProfile() {
@@ -40,6 +41,7 @@ export function useUserProfile() {
         birthDate: Timestamp.fromDate(changes.birthDate),
       }),
       ...(changes.avatarColor !== undefined && { avatarColor: changes.avatarColor }),
+      ...(changes.avatarIcon !== undefined && { avatarIcon: changes.avatarIcon }),
     });
   };
 

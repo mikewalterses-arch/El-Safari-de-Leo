@@ -1,4 +1,4 @@
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { create } from 'zustand';
 import { db } from '@/lib/firebase';
 import type { Animal, JournalNote, Sighting } from '@/types/models';
@@ -6,13 +6,11 @@ import type { Animal, JournalNote, Sighting } from '@/types/models';
 /**
  * Store global con subscripciones onSnapshot **únicas** por colección.
  *
- * Multi-usuario: las subscripciones de sightings y notes se inician con un uid
- * (datos privados por familia bajo users/{uid}/...). Animals es un cache
- * compartido a nivel global.
+ * Multi-hijo: las subscripciones de sightings y notes están parametrizadas por
+ * `(uid, kidId)`. Si cambia el activeKidId (otro peque seleccionado), se cierra
+ * el listener anterior y se abre uno nuevo filtrado por el nuevo kidId.
  *
- * Las subscripciones se inician la primera vez que un componente las consume y
- * nunca se cancelan durante la vida de la app — para evitar el bug de Firestore
- * "INTERNAL ASSERTION FAILED (b815)" al re-suscribir rápido al cambiar de menú.
+ * Animals queda a nivel raíz (cache compartido entre todos los usuarios).
  */
 
 export interface AnimalDoc extends Animal {
@@ -33,11 +31,13 @@ interface FirestoreState {
   sightingsLoading: boolean;
   notesLoading: boolean;
   _animalsStarted: boolean;
-  _sightingsStartedFor: string | null;
-  _notesStartedFor: string | null;
+  _sightingsKey: string | null; // `${uid}:${kidId}`
+  _notesKey: string | null;
+  _sightingsUnsub: (() => void) | null;
+  _notesUnsub: (() => void) | null;
   startAnimals: () => void;
-  startSightings: (uid: string) => void;
-  startNotes: (uid: string) => void;
+  startSightings: (uid: string, kidId: string) => void;
+  startNotes: (uid: string, kidId: string) => void;
 }
 
 export const useFirestoreStore = create<FirestoreState>((set, get) => ({
@@ -48,8 +48,10 @@ export const useFirestoreStore = create<FirestoreState>((set, get) => ({
   sightingsLoading: true,
   notesLoading: true,
   _animalsStarted: false,
-  _sightingsStartedFor: null,
-  _notesStartedFor: null,
+  _sightingsKey: null,
+  _notesKey: null,
+  _sightingsUnsub: null,
+  _notesUnsub: null,
 
   startAnimals: () => {
     if (get()._animalsStarted) return;
@@ -70,14 +72,19 @@ export const useFirestoreStore = create<FirestoreState>((set, get) => ({
     );
   },
 
-  startSightings: (uid: string) => {
-    if (get()._sightingsStartedFor === uid) return;
-    set({ _sightingsStartedFor: uid });
+  startSightings: (uid, kidId) => {
+    const key = `${uid}:${kidId}`;
+    if (get()._sightingsKey === key) return;
+    // Cerrar listener anterior si lo hay
+    get()._sightingsUnsub?.();
+    set({ _sightingsKey: key, sightingsLoading: true, sightings: [] });
+
     const q = query(
       collection(db, 'users', uid, 'sightings'),
+      where('kidId', '==', kidId),
       orderBy('createdAt', 'desc'),
     );
-    onSnapshot(
+    const unsub = onSnapshot(
       q,
       (snap) => {
         set({
@@ -93,16 +100,21 @@ export const useFirestoreStore = create<FirestoreState>((set, get) => ({
         set({ sightingsLoading: false });
       },
     );
+    set({ _sightingsUnsub: unsub });
   },
 
-  startNotes: (uid: string) => {
-    if (get()._notesStartedFor === uid) return;
-    set({ _notesStartedFor: uid });
+  startNotes: (uid, kidId) => {
+    const key = `${uid}:${kidId}`;
+    if (get()._notesKey === key) return;
+    get()._notesUnsub?.();
+    set({ _notesKey: key, notesLoading: true, notes: [] });
+
     const q = query(
       collection(db, 'users', uid, 'notes'),
+      where('kidId', '==', kidId),
       orderBy('createdAt', 'desc'),
     );
-    onSnapshot(
+    const unsub = onSnapshot(
       q,
       (snap) => {
         set({
@@ -118,5 +130,6 @@ export const useFirestoreStore = create<FirestoreState>((set, get) => ({
         set({ notesLoading: false });
       },
     );
+    set({ _notesUnsub: unsub });
   },
 }));

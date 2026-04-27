@@ -1,13 +1,34 @@
 import type { Timestamp } from 'firebase/firestore';
 
-export interface User {
+/**
+ * Perfil de un peque dentro de la cuenta de un padre/madre.
+ * Una cuenta de auth puede tener varios peques (multi-hijo).
+ */
+export interface KidProfile {
+  id: string;
   displayName: string;
   birthDate: Timestamp;
   avatarColor: string;
-  /** Id del icono Lucide del avatar. Si está ausente, fallback a inicial. */
   avatarIcon?: string;
   createdAt: Timestamp;
-  stats: UserStats;
+}
+
+/**
+ * Documento en `users/{userId}`. Representa la cuenta del padre/madre.
+ * Multi-hijo: la lista `kids` contiene los peques de la familia.
+ * Compat: campos legacy (displayName, birthDate, avatarColor) coexisten hasta
+ * que la migración los mueve a `kids[0]`.
+ */
+export interface User {
+  kids?: KidProfile[];
+  migratedToMultiKid?: boolean;
+  createdAt: Timestamp;
+  stats?: UserStats;
+  // Legacy single-kid (se mantienen hasta migrar):
+  displayName?: string;
+  birthDate?: Timestamp;
+  avatarColor?: string;
+  avatarIcon?: string;
 }
 
 export interface UserStats {
@@ -33,7 +54,6 @@ export interface Animal {
   source: 'wikipedia' | 'inaturalist' | 'manual';
   createdAt: Timestamp;
   taxonomicClass?: TaxonomicClass;
-  /** Iconic taxon de iNat en inglés ("Mammalia", "Aves"...). Estable entre idiomas — usado para badges educativas. */
   iconicTaxon?: string;
   soundUrl?: string;
 }
@@ -56,6 +76,8 @@ export interface SightingAttributes {
 }
 
 export interface Sighting {
+  /** Id del peque al que pertenece este avistamiento. */
+  kidId?: string;
   animalId: string;
   photoUrl: string;
   thumbnailUrl: string;
@@ -73,7 +95,10 @@ export interface SightingLocation {
   placeName: string;
 }
 
+/** Documento en `notes/{noteId}`. Diario libre, notas sin foto. */
 export interface JournalNote {
+  /** Id del peque al que pertenece esta nota. */
+  kidId?: string;
   text: string;
   createdAt: Timestamp;
 }

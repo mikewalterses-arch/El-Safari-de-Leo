@@ -20,6 +20,7 @@ import type { SightingAttributes, SightingLocation } from '@/types/models';
 
 interface CreateSightingInput {
   uid: string;
+  kidId: string;
   animalId: string;
   photo: File;
   location: SightingLocation | null;
@@ -37,10 +38,15 @@ const EMPTY_LOCATION: SightingLocation = { lat: 0, lng: 0, placeName: '' };
 export async function createSighting(
   input: CreateSightingInput,
 ): Promise<CreateSightingResult> {
-  const isFirstDiscovery = await checkFirstDiscovery(input.uid, input.animalId);
+  const isFirstDiscovery = await checkFirstDiscovery(
+    input.uid,
+    input.kidId,
+    input.animalId,
+  );
   const { original, thumbnail } = await processPhoto(input.photo);
 
   const docData: Record<string, unknown> = {
+    kidId: input.kidId,
     animalId: input.animalId,
     photoUrl: '',
     thumbnailUrl: '',
@@ -84,10 +90,12 @@ function hasAttributes(a: SightingAttributes): boolean {
 
 async function checkFirstDiscovery(
   uid: string,
+  kidId: string,
   animalId: string,
 ): Promise<boolean> {
   const q = query(
     collection(db, 'users', uid, 'sightings'),
+    where('kidId', '==', kidId),
     where('animalId', '==', animalId),
     limit(1),
   );

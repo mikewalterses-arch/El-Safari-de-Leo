@@ -1,15 +1,8 @@
 import { useEffect, useState } from 'react';
-import { doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/features/auth/useAuth';
 import type { User } from '@/types/models';
-
-interface UpdateProfileChanges {
-  displayName?: string;
-  birthDate?: Date;
-  avatarColor?: string;
-  avatarIcon?: string;
-}
 
 export function useUserProfile() {
   const { user } = useAuth();
@@ -32,18 +25,5 @@ export function useUserProfile() {
     );
   }, [user]);
 
-  const update = async (changes: UpdateProfileChanges) => {
-    if (!user) return;
-    const ref = doc(db, 'users', user.uid);
-    await updateDoc(ref, {
-      ...(changes.displayName !== undefined && { displayName: changes.displayName }),
-      ...(changes.birthDate !== undefined && {
-        birthDate: Timestamp.fromDate(changes.birthDate),
-      }),
-      ...(changes.avatarColor !== undefined && { avatarColor: changes.avatarColor }),
-      ...(changes.avatarIcon !== undefined && { avatarIcon: changes.avatarIcon }),
-    });
-  };
-
-  return { profile, loading, update };
+  return { profile, loading };
 }

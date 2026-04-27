@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Cell,
@@ -8,11 +8,14 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import { Plus, Trash2 } from 'lucide-react';
 import { useAnimals } from '@/features/animals/useAnimals';
 import { useSightings } from '@/features/sightings/useSightings';
 import { AchievementsSection } from '@/features/achievements/AchievementsSection';
 import { useUserTypeStore } from '@/features/auth/userType';
-import { useUserProfile } from '@/features/user/useUserProfile';
+import { useKids } from '@/features/kids/useKids';
+import { addKid, removeKid, updateKid } from '@/features/kids/kidMutations';
+import { useAuth } from '@/features/auth/useAuth';
 import { Avatar, AVATAR_PRESETS } from '@/components/ui/Avatar';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -23,6 +26,7 @@ import {
   useT,
 } from '@/i18n';
 import { cn } from '@/lib/cn';
+import type { KidProfile } from '@/types/models';
 
 const CHART_COLORS = [
   '#7DD3C7',
@@ -33,7 +37,6 @@ const CHART_COLORS = [
   '#D9A28A',
   '#A0B8E0',
 ];
-
 
 export function Profile() {
   const t = useT();
@@ -63,7 +66,7 @@ export function Profile() {
     <div className="space-y-6">
       <h2 className="text-2xl font-extrabold">{t('profile.title')}</h2>
 
-      <KidInfoSection />
+      <KidsSection />
 
       <div className="grid grid-cols-3 gap-3">
         <StatCard label={t('profile.statsAvistamientos')} value={totalSightings} />
@@ -129,154 +132,242 @@ function StatCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-function KidInfoSection() {
+/** Sección de gestión de peques: lista, selector activo, añadir/editar/borrar. */
+function KidsSection() {
   const t = useT();
-  const { profile, update } = useUserProfile();
-  const [name, setName] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [color, setColor] = useState('');
-  const [icon, setIcon] = useState<string | undefined>(undefined);
-  const [editing, setEditing] = useState(false);
+  const { kids, activeKidId, setActiveKidId } = useKids();
+  const [editingKid, setEditingKid] = useState<KidProfile | null>(null);
+  const [adding, setAdding] = useState(false);
+
+  return (
+    <section className="rounded-card border border-foreground/10 bg-cream p-4">
+      <h3 className="text-lg font-extrabold">{t('profile.kidsTitle')}</h3>
+
+      <ul className="mt-3 space-y-2">
+        {kids.map((kid) => (
+          <li
+            key={kid.id}
+            className={cn(
+              'flex items-center gap-3 rounded-card border p-3 transition-colors',
+              kid.id === activeKidId
+                ? 'border-primary bg-primary/10'
+                : 'border-foreground/10 bg-surface',
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveKidId(kid.id)}
+              className="flex flex-1 items-center gap-3"
+            >
+              <Avatar
+                icon={kid.avatarIcon}
+                color={kid.avatarColor}
+                fallbackInitial={kid.displayName.charAt(0)}
+                size={48}
+              />
+              <div className="min-w-0 flex-1 text-left">
+                <p className="truncate font-extrabold">{kid.displayName}</p>
+                {kid.id === activeKidId && (
+                  <p className="text-xs text-primary">{t('profile.activeKid')}</p>
+                )}
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingKid(kid)}
+              className="text-sm font-semibold text-primary"
+            >
+              {t('profile.edit')}
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        type="button"
+        onClick={() => setAdding(true)}
+        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-button border border-dashed border-primary/40 py-3 text-sm font-extrabold text-primary"
+      >
+        <Plus className="h-4 w-4" strokeWidth={2.5} />
+        {t('profile.addKid')}
+      </button>
+
+      {(adding || editingKid) && (
+        <KidFormModal
+          kid={editingKid}
+          onClose={() => {
+            setAdding(false);
+            setEditingKid(null);
+          }}
+        />
+      )}
+    </section>
+  );
+}
+
+interface KidFormModalProps {
+  kid: KidProfile | null;
+  onClose: () => void;
+}
+
+function KidFormModal({ kid, onClose }: KidFormModalProps) {
+  const t = useT();
+  const { user } = useAuth();
+  const { kids } = useKids();
+  const [name, setName] = useState(kid?.displayName ?? '');
+  const [birthDate, setBirthDate] = useState(
+    kid?.birthDate ? kid.birthDate.toDate().toISOString().slice(0, 10) : '',
+  );
+  const [icon, setIcon] = useState<string | undefined>(kid?.avatarIcon);
+  const [color, setColor] = useState(kid?.avatarColor ?? '#7DD3C7');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!profile || editing) return;
-    setName(profile.displayName);
-    setColor(profile.avatarColor);
-    setIcon(profile.avatarIcon);
-    const d = profile.birthDate?.toDate();
-    setBirthDate(d ? d.toISOString().slice(0, 10) : '');
-  }, [profile, editing]);
+  const isEdit = Boolean(kid);
+  const canDelete = isEdit && kids.length > 1;
 
-  const save = async () => {
+  const submit = async () => {
+    if (!user || !name.trim() || !birthDate) return;
     setSaving(true);
     try {
-      await update({
-        displayName: name.trim() || profile?.displayName,
-        birthDate: birthDate ? new Date(birthDate) : undefined,
-        avatarColor: color,
-        avatarIcon: icon ?? '',
-      });
-      setEditing(false);
+      if (isEdit && kid) {
+        await updateKid(user.uid, {
+          id: kid.id,
+          displayName: name.trim(),
+          birthDate: new Date(birthDate),
+          avatarColor: color,
+          avatarIcon: icon ?? '',
+        });
+      } else {
+        await addKid(user.uid, {
+          displayName: name.trim(),
+          birthDate: new Date(birthDate),
+          avatarColor: color,
+          avatarIcon: icon,
+        });
+      }
+      onClose();
     } catch (err) {
-      console.error('update profile failed', err);
-    } finally {
+      console.error('kid save failed', err);
       setSaving(false);
     }
   };
 
-  if (!profile) return null;
+  const onDelete = async () => {
+    if (!user || !kid || !canDelete) return;
+    if (!window.confirm(t('profile.deleteKidConfirm', { name: kid.displayName }))) return;
+    setSaving(true);
+    try {
+      await removeKid(user.uid, kid.id);
+      onClose();
+    } catch (err) {
+      console.error('kid delete failed', err);
+      setSaving(false);
+    }
+  };
 
   return (
-    <section className="rounded-card border border-foreground/10 bg-cream p-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-extrabold">{t('profile.kidTitle')}</h3>
-        {!editing && (
+    <div className="fixed inset-0 z-[1200] flex items-end justify-center bg-foreground/40 p-4 sm:items-center">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void submit();
+        }}
+        className="w-full max-w-md space-y-4 rounded-card bg-surface p-5 shadow-card"
+      >
+        <h4 className="text-lg font-extrabold">
+          {isEdit ? t('profile.editKid') : t('profile.addKid')}
+        </h4>
+
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold text-foreground/60">
+            {t('profile.kidName')}
+          </span>
+          <input
+            type="text"
+            required
+            autoFocus={!isEdit}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-button border border-foreground/15 bg-cream px-3 py-2 text-base focus:border-primary focus:outline-none"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold text-foreground/60">
+            {t('profile.kidBirthDate')}
+          </span>
+          <input
+            type="date"
+            required
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            className="w-full rounded-button border border-foreground/15 bg-cream px-3 py-2 text-base focus:border-primary focus:outline-none"
+          />
+        </label>
+        <div>
+          <p className="mb-2 text-xs font-semibold text-foreground/60">
+            {t('profile.kidAvatar')}
+          </p>
+          <div className="grid grid-cols-5 gap-2">
+            {AVATAR_PRESETS.map((preset) => {
+              const selected = preset.icon === icon && preset.color === color;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => {
+                    setIcon(preset.icon);
+                    setColor(preset.color);
+                  }}
+                  aria-label={preset.id}
+                  className={cn(
+                    'flex aspect-square items-center justify-center rounded-full border-2 transition-transform',
+                    selected
+                      ? 'border-foreground scale-105'
+                      : 'border-transparent',
+                  )}
+                >
+                  <Avatar
+                    icon={preset.icon}
+                    color={preset.color}
+                    size={40}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-2">
           <button
             type="button"
-            onClick={() => setEditing(true)}
-            className="text-sm font-semibold text-primary"
+            onClick={onClose}
+            disabled={saving}
+            className="flex-1 rounded-button border border-foreground/20 py-2 text-sm font-semibold disabled:opacity-50"
           >
-            {t('profile.edit')}
+            {t('diary.noteCancel')}
+          </button>
+          <button
+            type="submit"
+            disabled={saving || !name.trim() || !birthDate}
+            className="flex-[2] rounded-button bg-accent py-2 text-sm font-extrabold text-foreground shadow-soft disabled:opacity-50"
+          >
+            {saving ? '...' : t('profile.save')}
+          </button>
+        </div>
+
+        {canDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={saving}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-button border border-coral/40 bg-coral/10 py-2 text-sm font-semibold text-coral disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" />
+            {t('profile.deleteKid')}
           </button>
         )}
-      </div>
-
-      {!editing ? (
-        <div className="mt-2 flex items-center gap-3">
-          <Avatar
-            icon={profile.avatarIcon}
-            color={profile.avatarColor}
-            fallbackInitial={profile.displayName.charAt(0)}
-            size={56}
-          />
-          <div>
-            <p className="font-extrabold">{profile.displayName}</p>
-            {profile.birthDate && (
-              <p className="text-xs text-foreground/60">
-                {profile.birthDate.toDate().toLocaleDateString()}
-              </p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="mt-3 space-y-4">
-          <label className="block">
-            <span className="mb-1 block text-xs font-semibold text-foreground/60">
-              {t('profile.kidName')}
-            </span>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-button border border-foreground/15 bg-surface px-3 py-2 text-base focus:border-primary focus:outline-none"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs font-semibold text-foreground/60">
-              {t('profile.kidBirthDate')}
-            </span>
-            <input
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              className="w-full rounded-button border border-foreground/15 bg-surface px-3 py-2 text-base focus:border-primary focus:outline-none"
-            />
-          </label>
-          <div>
-            <p className="mb-2 text-xs font-semibold text-foreground/60">
-              {t('profile.kidAvatar')}
-            </p>
-            <div className="grid grid-cols-5 gap-2">
-              {AVATAR_PRESETS.map((preset) => {
-                const selected = preset.icon === icon && preset.color === color;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => {
-                      setIcon(preset.icon);
-                      setColor(preset.color);
-                    }}
-                    aria-label={preset.id}
-                    className={cn(
-                      'flex aspect-square items-center justify-center rounded-full border-2 transition-transform',
-                      selected
-                        ? 'border-foreground scale-105'
-                        : 'border-transparent',
-                    )}
-                  >
-                    <Avatar
-                      icon={preset.icon}
-                      color={preset.color}
-                      size={48}
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setEditing(false)}
-              disabled={saving}
-              className="flex-1 rounded-button border border-foreground/20 py-2 text-sm font-semibold disabled:opacity-50"
-            >
-              {t('diary.noteCancel')}
-            </button>
-            <button
-              type="button"
-              onClick={save}
-              disabled={saving}
-              className="flex-[2] rounded-button bg-accent py-2 text-sm font-extrabold text-foreground shadow-soft disabled:opacity-50"
-            >
-              {saving ? '...' : t('profile.save')}
-            </button>
-          </div>
-        </div>
-      )}
-    </section>
+      </form>
+    </div>
   );
 }
 

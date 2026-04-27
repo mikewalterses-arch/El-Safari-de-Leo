@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { UserRound } from 'lucide-react';
 import { SupervisionStrip } from './SupervisionStrip';
-import { useUserProfile } from '@/features/user/useUserProfile';
+import { useKids } from '@/features/kids/useKids';
 import { Avatar } from '@/components/ui/Avatar';
 
 export function Header() {
-  const { profile } = useUserProfile();
-  const kidName = profile?.displayName?.trim() || 'Leo';
+  const { activeKid } = useKids();
+  const kidName = activeKid?.displayName?.trim() || 'Leo';
   const title = `El Safari de ${kidName}`;
 
   return (
@@ -22,11 +22,11 @@ export function Header() {
             <span className="truncate text-lg">{title}</span>
           </Link>
           <Link to="/perfil" aria-label="Perfil" className="shrink-0">
-            {profile ? (
+            {activeKid ? (
               <Avatar
-                icon={profile.avatarIcon}
-                color={profile.avatarColor}
-                fallbackInitial={profile.displayName.charAt(0)}
+                icon={activeKid.avatarIcon}
+                color={activeKid.avatarColor}
+                fallbackInitial={activeKid.displayName.charAt(0)}
                 size={40}
               />
             ) : (

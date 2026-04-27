@@ -8,6 +8,7 @@ import { createSighting } from './createSighting';
 import { DiscoveryCelebration } from './DiscoveryCelebration';
 import { ensureAnimal } from '@/features/animals/cacheAnimal';
 import { useAuth } from '@/features/auth/useAuth';
+import { useKids } from '@/features/kids/useKids';
 import { getCurrentLocation } from '@/lib/geolocation';
 import { useT } from '@/i18n';
 import type {
@@ -25,6 +26,7 @@ interface PreselectedState {
 export function NewSightingFlow() {
   const t = useT();
   const { user } = useAuth();
+  const { activeKidId } = useKids();
   const navigate = useNavigate();
   const location = useLocation();
   const preselectedAnimal =
@@ -83,12 +85,13 @@ export function NewSightingFlow() {
   };
 
   const onSave = async () => {
-    if (!user || !photo || !animalId) return;
+    if (!user || !photo || !animalId || !activeKidId) return;
     setStep('saving');
     setError(null);
     try {
       const result = await createSighting({
         uid: user.uid,
+        kidId: activeKidId,
         animalId,
         photo,
         location: locationData,

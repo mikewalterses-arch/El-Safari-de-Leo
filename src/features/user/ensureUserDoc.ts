@@ -1,31 +1,102 @@
-import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  writeBatch,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { User } from '@/types/models';
+import type { KidProfile, User } from '@/types/models';
 
-const LEO_DISPLAY_NAME = 'Leo';
-const LEO_BIRTHDATE = new Date('2019-06-07');
-const LEO_AVATAR_COLOR = '#FF9B85';
+const DEFAULT_KID_NAME = 'Leo';
+const DEFAULT_BIRTHDATE = new Date('2019-06-07');
+const DEFAULT_AVATAR_COLOR = '#FF9B85';
+
+function newKidId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
 
 /**
- * Crea `users/{uid}` con los datos iniciales de Leo si todavía no existe.
- * Idempotente: si ya está, no hace nada.
+ * Crea `users/{uid}` si no existe, y migra cuentas legacy single-kid al modelo
+ * multi-hijo. Idempotente.
  */
 export async function ensureUserDoc(uid: string): Promise<void> {
   const ref = doc(db, 'users', uid);
   const snap = await getDoc(ref);
-  if (snap.exists()) return;
 
-  const seed: User = {
-    displayName: LEO_DISPLAY_NAME,
-    birthDate: Timestamp.fromDate(LEO_BIRTHDATE),
-    avatarColor: LEO_AVATAR_COLOR,
-    createdAt: Timestamp.now(),
-    stats: {
-      totalSightings: 0,
-      uniqueAnimals: 0,
-      categoriesUnlocked: [],
-      achievements: [],
-    },
+  if (!snap.exists()) {
+    const firstKid: KidProfile = {
+      id: newKidId(),
+      displayName: DEFAULT_KID_NAME,
+      birthDate: Timestamp.fromDate(DEFAULT_BIRTHDATE),
+      avatarColor: DEFAULT_AVATAR_COLOR,
+      createdAt: Timestamp.now(),
+    };
+    const seed: User = {
+      kids: [firstKid],
+      migratedToMultiKid: true,
+      createdAt: Timestamp.now(),
+    };
+    await setDoc(ref, seed);
+    return;
+  }
+
+  const user = snap.data() as User;
+  if (user.migratedToMultiKid) return;
+
+  // Migrar legacy single-kid → multi-hijo. Construimos un peque con los datos
+  // del modelo viejo y reasignamos sightings/notes preexistentes.
+  const legacyName = user.displayName?.trim() || DEFAULT_KID_NAME;
+  const legacyBirthDate =
+    user.birthDate instanceof Timestamp
+      ? user.birthDate
+      : Timestamp.fromDate(DEFAULT_BIRTHDATE);
+  const legacyColor = user.avatarColor ?? DEFAULT_AVATAR_COLOR;
+  const legacyIcon = user.avatarIcon;
+
+  const firstKid: KidProfile = {
+    id: newKidId(),
+    displayName: legacyName,
+    birthDate: legacyBirthDate,
+    avatarColor: legacyColor,
+    ...(legacyIcon && { avatarIcon: legacyIcon }),
+    createdAt: user.createdAt ?? Timestamp.now(),
   };
-  await setDoc(ref, seed);
+
+  await migrateSightingsAndNotes(uid, firstKid.id);
+
+  await updateDoc(ref, {
+    kids: [firstKid],
+    migratedToMultiKid: true,
+  });
+}
+
+async function migrateSightingsAndNotes(
+  uid: string,
+  kidId: string,
+): Promise<void> {
+  const sightingsSnap = await getDocs(collection(db, 'users', uid, 'sightings'));
+  const notesSnap = await getDocs(collection(db, 'users', uid, 'notes'));
+
+  const refsToUpdate: { ref: ReturnType<typeof doc> }[] = [];
+  for (const s of sightingsSnap.docs) {
+    if (s.data().kidId) continue;
+    refsToUpdate.push({ ref: s.ref });
+  }
+  for (const n of notesSnap.docs) {
+    if (n.data().kidId) continue;
+    refsToUpdate.push({ ref: n.ref });
+  }
+
+  // Firestore limita batch a 500 ops. Chunkeamos a 400 por seguridad.
+  for (let i = 0; i < refsToUpdate.length; i += 400) {
+    const batch = writeBatch(db);
+    for (const r of refsToUpdate.slice(i, i + 400)) {
+      batch.update(r.ref, { kidId });
+    }
+    await batch.commit();
+  }
 }

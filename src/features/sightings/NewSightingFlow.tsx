@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { PhotoCaptureStep } from './PhotoCaptureStep';
 import { IdentifyStep } from './IdentifyStep';
 import { ConfirmStep } from './ConfirmStep';
+import { QuizStep } from './QuizStep';
+import { generateQuestion } from './quizGenerator';
 import { createSighting } from './createSighting';
 import { DiscoveryCelebration } from './DiscoveryCelebration';
 import { ensureAnimal } from '@/features/animals/cacheAnimal';
@@ -12,12 +16,21 @@ import { useKids } from '@/features/kids/useKids';
 import { getCurrentLocation } from '@/lib/geolocation';
 import { useT } from '@/i18n';
 import type {
+  Animal,
   AnimalSearchResult,
+  CuratedTags,
   SightingAttributes,
   SightingLocation,
 } from '@/types/models';
 
-type Step = 'photo' | 'identify' | 'caching' | 'confirm' | 'saving' | 'done';
+type Step =
+  | 'photo'
+  | 'identify'
+  | 'caching'
+  | 'confirm'
+  | 'saving'
+  | 'done'
+  | 'quiz';
 
 interface PreselectedState {
   animal?: AnimalSearchResult;
@@ -37,12 +50,19 @@ export function NewSightingFlow() {
   const [searchQuery, setSearchQuery] = useState('');
   const [animal, setAnimal] = useState<AnimalSearchResult | null>(preselectedAnimal);
   const [animalId, setAnimalId] = useState<string | null>(null);
+  const [animalCuratedTags, setAnimalCuratedTags] = useState<CuratedTags | undefined>(undefined);
   const [locationData, setLocationData] = useState<SightingLocation | null>(null);
   const [notes, setNotes] = useState('');
   const [attributes, setAttributes] = useState<SightingAttributes>({});
   const [error, setError] = useState<string | null>(null);
   const [identifyError, setIdentifyError] = useState<string | null>(null);
   const [isFirstDiscovery, setIsFirstDiscovery] = useState(false);
+
+  // Pregunta del quiz: se genera una sola vez cuando tenemos los curatedTags.
+  const quizQuestion = useMemo(
+    () => (animalCuratedTags ? generateQuestion(animalCuratedTags) : null),
+    [animalCuratedTags],
+  );
 
   useEffect(() => {
     if (!photo || locationData) return;
@@ -111,9 +131,16 @@ export function NewSightingFlow() {
   useEffect(() => {
     if (step !== 'done') return;
     const delay = isFirstDiscovery ? 2500 : 1200;
-    const handle = setTimeout(() => navigate('/diario'), delay);
+    const handle = setTimeout(() => {
+      // Si el animal está en el catálogo curado, mostramos quiz.
+      if (quizQuestion) {
+        setStep('quiz');
+      } else {
+        navigate('/diario');
+      }
+    }, delay);
     return () => clearTimeout(handle);
-  }, [step, navigate, isFirstDiscovery]);
+  }, [step, navigate, isFirstDiscovery, quizQuestion]);
 
   if (step === 'photo') {
     return <PhotoCaptureStep onPhotoSelected={onPhotoSelected} />;
@@ -139,6 +166,15 @@ export function NewSightingFlow() {
       <DiscoveryCelebration animalName={animal.title} />
     ) : (
       <FlowStateMessage label={t('newSighting.saved')} success />
+    );
+  }
+  if (step === 'quiz' && quizQuestion && animal) {
+    return (
+      <QuizStep
+        question={quizQuestion}
+        animalName={animal.title}
+        onContinue={() => navigate('/diario')}
+      />
     );
   }
 

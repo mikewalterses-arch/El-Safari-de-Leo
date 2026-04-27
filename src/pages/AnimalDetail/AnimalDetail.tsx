@@ -1,19 +1,12 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, ImagePlus, Trash2, Volume2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Pencil, Trash2, Volume2 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSightings } from '@/features/sightings/useSightings';
 import { useAuth } from '@/features/auth/useAuth';
-import { replaceSightingPhoto } from '@/features/sightings/replaceSightingPhoto';
 import { deleteSighting } from '@/features/sightings/deleteSighting';
-import { deriveBadges } from '@/features/animals/categoryBadges';
+import { deriveCharacteristics } from '@/features/animals/animalCharacteristics';
 import { useLocaleStore, useT } from '@/i18n';
 import type { Animal, SightingAttributes } from '@/types/models';
 
@@ -52,8 +45,11 @@ export function AnimalDetail() {
     mySightings[0]?.photoUrl || mySightings[0]?.thumbnailUrl,
   );
 
-  const badges = useMemo(
-    () => (animal ? deriveBadges(animal.iconicTaxon, locale) : []),
+  const characteristics = useMemo(
+    () =>
+      animal
+        ? deriveCharacteristics(animal.iconicTaxon, animal.description, locale)
+        : [],
     [animal, locale],
   );
 
@@ -99,20 +95,28 @@ export function AnimalDetail() {
           )}
       </div>
 
-      {badges.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {badges.map((b) => (
-            <span
-              key={b.key}
-              className="rounded-pill bg-primary/15 px-3 py-1 text-xs font-extrabold text-foreground"
-            >
-              {b.label}
-            </span>
-          ))}
-        </div>
-      )}
-
       {animal.soundUrl && <SoundButton url={animal.soundUrl} />}
+
+      {characteristics.length > 0 && (
+        <section className="rounded-card border border-foreground/10 bg-cream p-4">
+          <h3 className="text-lg font-extrabold">{t('animal.characteristics')}</h3>
+          <dl className="mt-3 space-y-2">
+            {characteristics.map((c) => (
+              <div
+                key={c.labelKey}
+                className="flex items-baseline justify-between gap-3 border-b border-foreground/5 pb-2 last:border-0 last:pb-0"
+              >
+                <dt className="text-sm font-semibold text-foreground/60">
+                  {t(c.labelKey)}
+                </dt>
+                <dd className="text-sm font-extrabold text-foreground">
+                  {c.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
 
       {animal.description && (
         <p className="leading-relaxed">{animal.description}</p>
@@ -232,24 +236,8 @@ function SightingItem({
   uid,
 }: SightingItemProps) {
   const t = useT();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !uid) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await replaceSightingPhoto(sightingId, uid, file);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Algo falló');
-    } finally {
-      setBusy(false);
-      if (inputRef.current) inputRef.current.value = '';
-    }
-  };
 
   const onDelete = async () => {
     if (!uid) return;
@@ -258,8 +246,6 @@ function SightingItem({
     setError(null);
     try {
       await deleteSighting(uid, sightingId);
-      // useSightings actualiza automáticamente vía onSnapshot;
-      // este componente desaparece de la lista.
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Algo falló');
       setBusy(false);
@@ -293,15 +279,13 @@ function SightingItem({
         {notes && <p className="mt-1 italic">"{notes}"</p>}
         {uid && (
           <div className="mt-2 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              disabled={busy}
-              className="inline-flex items-center gap-1 rounded-pill border border-foreground/15 bg-surface px-2.5 py-1 text-xs font-semibold text-foreground/70 disabled:opacity-50"
+            <Link
+              to={`/sighting/${sightingId}/edit`}
+              className="inline-flex items-center gap-1 rounded-pill border border-primary bg-primary/10 px-2.5 py-1 text-xs font-semibold text-foreground"
             >
-              <ImagePlus className="h-3.5 w-3.5" />
-              {busy ? t('animal.uploading') : t('animal.changePhoto')}
-            </button>
+              <Pencil className="h-3.5 w-3.5" />
+              {t('animal.edit')}
+            </Link>
             <button
               type="button"
               onClick={onDelete}
@@ -316,14 +300,6 @@ function SightingItem({
         {error && (
           <p className="mt-1 text-xs font-semibold text-coral">{error}</p>
         )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={onFileChange}
-          className="hidden"
-        />
       </div>
     </li>
   );

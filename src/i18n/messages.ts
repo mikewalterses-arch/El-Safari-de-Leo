@@ -108,6 +108,20 @@ const es: Messages = {
   'animal.uploading': 'Subiendo...',
   'animal.delete': 'Borrar',
   'animal.deleteConfirm': '¿Borrar este avistamiento? No se puede deshacer.',
+  'animal.edit': 'Editar',
+  'animal.characteristics': 'Características',
+
+  // Características
+  'char.type': 'Tipo',
+  'char.skeleton': 'Esqueleto',
+  'char.reproduction': 'Cómo nace',
+  'char.movement': 'Cómo se mueve',
+  'char.habitat': 'Dónde vive',
+  'char.diet': 'Qué come',
+
+  // Editar avistamiento
+  'sightingEdit.title': 'Editar avistamiento',
+  'sightingEdit.changePhoto': 'Cambiar foto',
 
   // Perfil
   'profile.title': 'Perfil',
@@ -345,6 +359,20 @@ const eu: Messages = {
   'animal.uploading': 'Igotzen...',
   'animal.delete': 'Ezabatu',
   'animal.deleteConfirm': 'Behaketa hau ezabatu? Ezin da desegin.',
+  'animal.edit': 'Editatu',
+  'animal.characteristics': 'Ezaugarriak',
+
+  // Ezaugarriak
+  'char.type': 'Mota',
+  'char.skeleton': 'Hezurdura',
+  'char.reproduction': 'Nola jaiotzen da',
+  'char.movement': 'Nola mugitzen da',
+  'char.habitat': 'Non bizi da',
+  'char.diet': 'Zer jaten du',
+
+  // Behaketa editatu
+  'sightingEdit.title': 'Behaketa editatu',
+  'sightingEdit.changePhoto': 'Argazkia aldatu',
 
   // Profila
   'profile.title': 'Profila',

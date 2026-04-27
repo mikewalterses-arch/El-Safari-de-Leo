@@ -24,6 +24,11 @@ const AnimalDetail = lazy(() =>
 const Intro = lazy(() =>
   import('@/pages/Intro/Intro').then((m) => ({ default: m.Intro })),
 );
+const SightingEdit = lazy(() =>
+  import('@/pages/SightingEdit/SightingEdit').then((m) => ({
+    default: m.SightingEdit,
+  })),
+);
 
 export const router = createBrowserRouter([
   {
@@ -37,6 +42,7 @@ export const router = createBrowserRouter([
       { path: 'nuevo', element: <NewSighting /> },
       { path: 'perfil', element: <Profile /> },
       { path: 'animal/:animalId', element: <AnimalDetail /> },
+      { path: 'sighting/:sightingId/edit', element: <SightingEdit /> },
       { path: 'intro', element: <Intro /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],

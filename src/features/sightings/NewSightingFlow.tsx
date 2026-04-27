@@ -79,6 +79,14 @@ export function NewSightingFlow() {
     try {
       const id = await ensureAnimal(result);
       setAnimalId(id);
+      // Leemos el animal cacheado para tener acceso a curatedTags (sirve al quiz).
+      try {
+        const snap = await getDoc(doc(db, 'animals', id));
+        const data = snap.data() as Animal | undefined;
+        setAnimalCuratedTags(data?.curatedTags);
+      } catch {
+        /* no-blocker; el quiz simplemente no se mostrará */
+      }
       setStep('confirm');
     } catch (err) {
       console.error('ensureAnimal failed', err);

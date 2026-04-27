@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { useT } from '@/i18n';
 import { createNote } from './createNote';
 
@@ -12,8 +12,7 @@ export function NewNoteForm({ onClose }: NewNoteFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSave = async () => {
     if (!text.trim()) return;
     setSubmitting(true);
     setError(null);
@@ -28,7 +27,10 @@ export function NewNoteForm({ onClose }: NewNoteFormProps) {
 
   return (
     <form
-      onSubmit={submit}
+      onSubmit={(e) => {
+        e.preventDefault();
+        void handleSave();
+      }}
       className="rounded-card border border-foreground/10 bg-cream p-4"
     >
       <p className="text-xs font-extrabold uppercase tracking-wide text-foreground/60">

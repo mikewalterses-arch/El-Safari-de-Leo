@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -15,8 +15,7 @@ export function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleAuth = async () => {
     setError(null);
     setSubmitting(true);
     try {
@@ -58,7 +57,13 @@ export function LoginScreen() {
           </p>
         </div>
 
-        <form onSubmit={submit} className="mt-10 space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleAuth();
+          }}
+          className="mt-10 space-y-4"
+        >
           <label className="block">
             <span className="mb-2 block text-sm font-semibold">Email</span>
             <div className="relative">

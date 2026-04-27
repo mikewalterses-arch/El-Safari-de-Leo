@@ -194,7 +194,9 @@ const es: Messages = {
   'profile.edit': 'Editar',
   'profile.save': 'Guardar',
   'profile.signOut': 'Cerrar sesión',
-  'profile.viewIntro': 'Ver introducción de la app',
+  'profile.viewIntro': 'Mostrar la intro de la app',
+  'profile.viewIntroNamed': 'Mostrar la intro a {name}',
+  'profile.viewIntroToday': '¡Hoy!',
   'animal.yourPhoto': 'Tu foto',
 
   // Descubrimiento
@@ -468,7 +470,9 @@ const eu: Messages = {
   'profile.edit': 'Editatu',
   'profile.save': 'Gorde',
   'profile.signOut': 'Saioa itxi',
-  'profile.viewIntro': 'Aplikazioaren sarrera ikusi',
+  'profile.viewIntro': 'Aplikazioaren sarrera erakutsi',
+  'profile.viewIntroNamed': '{name}-(r)i sarrera erakutsi',
+  'profile.viewIntroToday': 'Gaur!',
   'animal.yourPhoto': 'Zure argazkia',
 
   // Aurkikuntza

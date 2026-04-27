@@ -8,7 +8,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Sparkles } from 'lucide-react';
 import { useAnimals } from '@/features/animals/useAnimals';
 import { useSightings } from '@/features/sightings/useSightings';
 import { AchievementsSection } from '@/features/achievements/AchievementsSection';
@@ -402,13 +402,41 @@ function LanguageSection() {
 
 function ViewIntroLink() {
   const t = useT();
+  const { activeKid } = useKids();
+  const name = activeKid?.displayName?.trim() ?? '';
+  const isBirthday = activeKid ? isBirthdayToday(activeKid) : false;
   return (
     <Link
       to="/intro"
-      className="block w-full rounded-button border border-foreground/15 bg-cream py-3 text-center text-sm font-semibold text-foreground/70 transition-colors hover:border-primary"
+      className={cn(
+        'flex w-full items-center justify-center gap-2 rounded-button border-2 py-4 text-base font-extrabold transition-colors',
+        isBirthday
+          ? 'border-primary bg-highlight text-foreground shadow-card'
+          : 'border-foreground/15 bg-cream text-foreground/80 hover:border-primary',
+      )}
     >
-      {t('profile.viewIntro')}
+      <Sparkles className="h-5 w-5" strokeWidth={2.5} />
+      <span>
+        {name
+          ? t('profile.viewIntroNamed', { name })
+          : t('profile.viewIntro')}
+      </span>
+      {isBirthday && (
+        <span className="ml-1 rounded-full bg-primary px-2 py-0.5 text-xs font-extrabold uppercase tracking-wider text-foreground">
+          {t('profile.viewIntroToday')}
+        </span>
+      )}
     </Link>
+  );
+}
+
+function isBirthdayToday(kid: KidProfile): boolean {
+  const birth = kid.birthDate?.toDate?.();
+  if (!birth) return false;
+  const today = new Date();
+  return (
+    birth.getMonth() === today.getMonth() &&
+    birth.getDate() === today.getDate()
   );
 }
 

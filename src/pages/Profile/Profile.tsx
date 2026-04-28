@@ -16,6 +16,7 @@ import { useUserTypeStore } from '@/features/auth/userType';
 import { useKids } from '@/features/kids/useKids';
 import { addKid, removeKid, updateKid } from '@/features/kids/kidMutations';
 import { useAuth } from '@/features/auth/useAuth';
+import { useActiveKidStore as useActiveKidStoreImport } from '@/features/kids/activeKid';
 import { Avatar, AVATAR_PRESETS } from '@/components/ui/Avatar';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -117,6 +118,8 @@ export function Profile() {
       <ViewIntroLink />
 
       <HelpLink />
+
+      <DiagnosticPanel />
 
       <ChangeUserSection />
 
@@ -430,6 +433,34 @@ function ViewIntroLink() {
       )}
     </Link>
   );
+}
+
+function DiagnosticPanel() {
+  const { user } = useAuth();
+  const { kids, activeKid, activeKidId } = useKids();
+  const { sightings } = useSightings();
+  const storeKidId = useActiveKidStoreRaw();
+  return (
+    <details className="rounded-card border border-foreground/15 bg-cream p-3">
+      <summary className="cursor-pointer text-xs font-extrabold uppercase tracking-wider text-foreground/60">
+        Diagnóstico (toca para abrir)
+      </summary>
+      <div className="mt-3 space-y-1 font-mono text-[11px] text-foreground/80">
+        <p>uid: {user?.uid ?? '—'}</p>
+        <p>kids count: {kids.length}</p>
+        <p>activeKid (resuelto): {activeKid?.displayName ?? '—'}</p>
+        <p>activeKidId (resuelto): {activeKidId ?? '—'}</p>
+        <p>activeKidId (store crudo): {storeKidId ?? '—'}</p>
+        <p>kids ids: {kids.map((k) => k.id).join(', ') || '—'}</p>
+        <p>sightings cargados: {sightings.length}</p>
+        <p>sightings kidIds: {[...new Set(sightings.map((s) => s.kidId ?? 'null'))].join(', ') || '—'}</p>
+      </div>
+    </details>
+  );
+}
+
+function useActiveKidStoreRaw(): string | null {
+  return useActiveKidStoreImport((s) => s.activeKidId);
 }
 
 function HelpLink() {

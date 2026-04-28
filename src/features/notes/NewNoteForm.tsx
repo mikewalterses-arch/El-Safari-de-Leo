@@ -17,13 +17,22 @@ export function NewNoteForm({ onClose }: NewNoteFormProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
-    if (!text.trim() || !user || !activeKidId) return;
+    if (!text.trim() || !user) return;
+    if (!activeKidId) {
+      console.warn('[NewNoteForm] activeKidId is null — abortando', {
+        hasUser: !!user,
+        activeKidId,
+      });
+      setError('No hay un peque activo. Ve a Perfil y crea o selecciona uno.');
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
       await createNote(user.uid, activeKidId, text);
       onClose();
     } catch (err) {
+      console.error('[createNote] failed', err);
       setError(err instanceof Error ? err.message : 'Algo falló');
       setSubmitting(false);
     }

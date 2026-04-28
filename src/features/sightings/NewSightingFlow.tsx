@@ -113,7 +113,17 @@ export function NewSightingFlow() {
   };
 
   const onSave = async () => {
-    if (!user || !photo || !animalId || !activeKidId) return;
+    if (!user || !photo || !animalId) return;
+    if (!activeKidId) {
+      console.warn('[onSave] activeKidId is null — abortando', {
+        hasUser: !!user,
+        hasPhoto: !!photo,
+        animalId,
+        activeKidId,
+      });
+      setError('No hay un peque activo. Ve a Perfil y crea o selecciona uno.');
+      return;
+    }
     setStep('saving');
     setError(null);
     try {

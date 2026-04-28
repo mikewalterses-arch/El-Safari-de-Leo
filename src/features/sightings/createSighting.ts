@@ -64,6 +64,12 @@ export async function createSighting(
     collection(db, 'users', input.uid, 'sightings'),
     docData,
   );
+  console.log('[createSighting] doc created', {
+    docId: docRef.id,
+    uid: input.uid,
+    kidId: input.kidId,
+    animalId: input.animalId,
+  });
 
   const photoPath = `sightings/${input.uid}/${docRef.id}/photo.jpg`;
   const thumbPath = `sightings/${input.uid}/${docRef.id}/thumb.jpg`;

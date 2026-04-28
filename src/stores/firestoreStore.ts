@@ -75,6 +75,7 @@ export const useFirestoreStore = create<FirestoreState>((set, get) => ({
   startSightings: (uid, kidId) => {
     const key = `${uid}:${kidId}`;
     if (get()._sightingsKey === key) return;
+    console.log('[startSightings] subscribing', { uid, kidId });
     // Cerrar listener anterior si lo hay
     get()._sightingsUnsub?.();
     set({ _sightingsKey: key, sightingsLoading: true, sightings: [] });
@@ -87,6 +88,11 @@ export const useFirestoreStore = create<FirestoreState>((set, get) => ({
     const unsub = onSnapshot(
       q,
       (snap) => {
+        console.log('[sightings snapshot]', {
+          kidId,
+          count: snap.size,
+          ids: snap.docs.map((d) => d.id),
+        });
         set({
           sightings: snap.docs.map((d) => ({
             id: d.id,

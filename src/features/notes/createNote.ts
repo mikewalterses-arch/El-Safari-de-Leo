@@ -13,6 +13,7 @@ export async function createNote(
     text: trimmed,
     createdAt: Timestamp.now(),
   });
+  console.log('[createNote] doc created', { docId: ref.id, uid, kidId });
   return ref.id;
 }
 

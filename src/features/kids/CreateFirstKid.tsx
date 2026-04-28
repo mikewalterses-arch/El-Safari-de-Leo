@@ -3,17 +3,8 @@ import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/features/auth/useAuth';
 import { addKid } from './kidMutations';
 import { useActiveKidStore } from './activeKid';
-
-const COLORS = [
-  '#FF9B85',
-  '#7DD3C7',
-  '#F8B400',
-  '#A8DADC',
-  '#FFD166',
-  '#EF476F',
-  '#06D6A0',
-  '#118AB2',
-];
+import { Avatar, AVATAR_PRESETS } from '@/components/ui/Avatar';
+import { cn } from '@/lib/cn';
 
 /**
  * Pantalla bloqueante que se muestra cuando un usuario autenticado todavía no
@@ -26,9 +17,12 @@ export function CreateFirstKid() {
   const setActiveKidId = useActiveKidStore((s) => s.setActiveKidId);
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
-  const [color, setColor] = useState(COLORS[0]!);
+  const [presetId, setPresetId] = useState(AVATAR_PRESETS[0]!.id);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const preset =
+    AVATAR_PRESETS.find((p) => p.id === presetId) ?? AVATAR_PRESETS[0]!;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +33,8 @@ export function CreateFirstKid() {
       const created = await addKid(user.uid, {
         displayName: name.trim(),
         birthDate: new Date(birthDate),
-        avatarColor: color,
+        avatarColor: preset.color,
+        avatarIcon: preset.icon,
       });
       // Activar el peque recién creado para que toda la app le filtre
       setActiveKidId(created.id);
@@ -67,7 +62,7 @@ export function CreateFirstKid() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <label className="block">
               <span className="mb-1 block text-xs font-extrabold uppercase tracking-wider text-foreground/60">
                 Nombre
@@ -99,23 +94,28 @@ export function CreateFirstKid() {
 
             <div>
               <span className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-foreground/60">
-                Color
+                Elige un avatar
               </span>
-              <div className="flex flex-wrap gap-2">
-                {COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    aria-label={c}
-                    className={`h-10 w-10 rounded-full transition-transform ${
-                      color === c
-                        ? 'ring-4 ring-foreground/60 ring-offset-2 ring-offset-surface'
-                        : ''
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
+              <div className="grid grid-cols-5 gap-2">
+                {AVATAR_PRESETS.map((p) => {
+                  const selected = p.id === presetId;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPresetId(p.id)}
+                      aria-label={p.id}
+                      className={cn(
+                        'flex aspect-square items-center justify-center rounded-full border-2 transition-transform',
+                        selected
+                          ? 'scale-110 border-foreground'
+                          : 'border-transparent',
+                      )}
+                    >
+                      <Avatar icon={p.icon} color={p.color} size={44} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

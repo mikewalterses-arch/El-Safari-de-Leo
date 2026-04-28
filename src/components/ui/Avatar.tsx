@@ -1,20 +1,39 @@
-import { Bird, Bug, Cat, Fish, Rabbit, Squirrel, Turtle, type LucideIcon } from 'lucide-react';
+import {
+  Bird,
+  Bug,
+  Cat,
+  Dog,
+  Fish,
+  PawPrint,
+  Rabbit,
+  Rat,
+  Snail,
+  Squirrel,
+  Turtle,
+  Worm,
+  type LucideIcon,
+} from 'lucide-react';
 
 /**
  * Avatar circular: fondo de color de marca + icono del animal elegido.
  * Si no hay icon, muestra la inicial del nombre.
  *
- * Lista de presets (icon + color) — usados como avatares preset en Perfil.
+ * Lista de presets (icon + color) — usados como avatares preset.
  */
 
 const ICON_MAP: Record<string, LucideIcon> = {
   cat: Cat,
+  dog: Dog,
   bird: Bird,
   fish: Fish,
   bug: Bug,
   rabbit: Rabbit,
   squirrel: Squirrel,
   turtle: Turtle,
+  rat: Rat,
+  snail: Snail,
+  worm: Worm,
+  paw: PawPrint,
 };
 
 export interface AvatarPreset {
@@ -24,16 +43,31 @@ export interface AvatarPreset {
 }
 
 export const AVATAR_PRESETS: AvatarPreset[] = [
+  // Mamíferos
   { id: 'cat-coral', icon: 'cat', color: '#FF9B85' },
   { id: 'cat-turquoise', icon: 'cat', color: '#7DD3C7' },
-  { id: 'rabbit-yellow', icon: 'rabbit', color: '#FFE5A0' },
+  { id: 'dog-yellow', icon: 'dog', color: '#FFE5A0' },
+  { id: 'dog-blue', icon: 'dog', color: '#90CAF9' },
+  { id: 'rabbit-pink', icon: 'rabbit', color: '#F8BBD0' },
+  { id: 'rabbit-lime', icon: 'rabbit', color: '#B8E0A0' },
+  { id: 'squirrel-orange', icon: 'squirrel', color: '#FFCC80' },
+  { id: 'rat-purple', icon: 'rat', color: '#B39DDB' },
+  // Aves
   { id: 'bird-lime', icon: 'bird', color: '#B8E0A0' },
   { id: 'bird-coral', icon: 'bird', color: '#FF9B85' },
+  { id: 'bird-blue', icon: 'bird', color: '#90CAF9' },
+  // Acuáticos
   { id: 'fish-turquoise', icon: 'fish', color: '#7DD3C7' },
+  { id: 'fish-blue', icon: 'fish', color: '#90CAF9' },
   { id: 'turtle-lime', icon: 'turtle', color: '#B8E0A0' },
-  { id: 'squirrel-yellow', icon: 'squirrel', color: '#FFE5A0' },
+  // Invertebrados
   { id: 'bug-lime', icon: 'bug', color: '#B8E0A0' },
   { id: 'bug-coral', icon: 'bug', color: '#FF9B85' },
+  { id: 'snail-yellow', icon: 'snail', color: '#FFE5A0' },
+  { id: 'worm-pink', icon: 'worm', color: '#F8BBD0' },
+  // Genérico
+  { id: 'paw-orange', icon: 'paw', color: '#FFCC80' },
+  { id: 'paw-purple', icon: 'paw', color: '#B39DDB' },
 ];
 
 interface AvatarProps {

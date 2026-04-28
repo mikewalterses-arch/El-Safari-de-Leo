@@ -120,7 +120,7 @@ export function AnimalDetail() {
       {animal.curatedTags?.sizeMeters !== undefined && (
         <SizeComparison
           sizeMeters={animal.curatedTags.sizeMeters}
-          thumbnailUrl={animal.thumbnailUrl}
+          iconicTaxon={animal.iconicTaxon}
         />
       )}
 

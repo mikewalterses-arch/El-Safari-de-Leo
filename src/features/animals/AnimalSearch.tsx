@@ -28,9 +28,10 @@ export function AnimalSearch({ query, onQueryChange, onSelect }: AnimalSearchPro
       return;
     }
     let cancelled = false;
-    setLoading(true);
     setError(null);
     const handle = setTimeout(() => {
+      if (cancelled) return;
+      setLoading(true);
       searchAnimalTaxa(query, { lang: locale })
         .then((r) => {
           if (!cancelled) setResults(r);

@@ -12,6 +12,7 @@ import {
   Lock,
   Mail,
   MapPin,
+  Sparkles,
 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 
@@ -62,6 +63,23 @@ export function LoginScreen() {
     <div className="min-h-dvh bg-surface px-6 py-8">
       <div className="mx-auto w-full max-w-md space-y-8">
         <Hero />
+
+        {/* Botón de presentación — llamada a la acción antes del formulario */}
+        <button
+          type="button"
+          onClick={() => { window.location.href = '/conoce'; }}
+          className="group flex w-full items-center justify-between rounded-card border-2 border-accent/40 bg-gradient-to-r from-accent/10 to-highlight/20 px-5 py-4 text-left shadow-soft transition-all hover:border-accent/70 hover:shadow-card"
+        >
+          <div>
+            <p className="text-sm font-extrabold text-foreground">
+              ¿Qué es El Safari de Leo?
+            </p>
+            <p className="text-xs text-foreground/60">
+              Ver cómo funciona — tour en 4 pasos
+            </p>
+          </div>
+          <Sparkles className="h-5 w-5 shrink-0 text-accent group-hover:scale-110 transition-transform" strokeWidth={2} />
+        </button>
 
         <FeatureList />
 

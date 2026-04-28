@@ -32,8 +32,12 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
   let summary: WikiSummary | null = null;
   if (result.wikipediaUrl) {
     const title = extractWikipediaTitle(result.wikipediaUrl);
+    // Usar el idioma de la URL (no el locale del usuario): iNaturalist devuelve
+    // URLs de en.wikipedia.org aunque el locale sea es, y buscar "Mallard" en
+    // es.wikipedia.org devuelve el artículo de una ciruela, no el pato.
+    const wikiLang = extractWikipediaLang(result.wikipediaUrl) ?? lang;
     if (title) {
-      summary = await fetchAnimalSummary(title, lang).catch(() => null);
+      summary = await fetchAnimalSummary(title, wikiLang).catch(() => null);
     }
   }
 
@@ -87,7 +91,10 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
     : undefined;
 
   const animal: Animal = {
-    commonName: summary?.title ?? result.title,
+    // Siempre el nombre preferido de iNaturalist (localizado al locale del usuario).
+    // El título de Wikipedia puede ser el nombre inglés o incluso el artículo
+    // equivocado (ej: "Mallard" en es.wikipedia.org es una ciruela, no el pato).
+    commonName: result.title,
     description: finalDescription,
     wikipediaUrl: summary?.wikipediaUrl ?? result.wikipediaUrl ?? '',
     wikipediaPageId: summary?.pageId ?? 0,
@@ -103,6 +110,15 @@ export async function ensureAnimal(result: AnimalSearchResult): Promise<string> 
   };
   await setDoc(ref, animal);
   return animalId;
+}
+
+function extractWikipediaLang(url: string): Locale | null {
+  try {
+    const m = new URL(url).hostname.match(/^([a-z]{2})\.wikipedia\.org$/);
+    return m ? (m[1] as Locale) : null;
+  } catch {
+    return null;
+  }
 }
 
 function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {

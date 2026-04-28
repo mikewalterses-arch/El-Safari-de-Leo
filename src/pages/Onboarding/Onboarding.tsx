@@ -1,13 +1,5 @@
 import { useMemo, useState } from 'react';
-import {
-  ArrowRight,
-  Camera,
-  Compass,
-  Map as MapIcon,
-  Users,
-  X,
-  type LucideIcon,
-} from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useKids } from '@/features/kids/useKids';
 import type { KidProfile } from '@/types/models';
@@ -181,48 +173,146 @@ function SlideArt({
   variant: SlideVisual;
   heroNumber: number;
 }) {
-  if (variant === 'birthday') {
-    return (
-      <div className="relative inline-flex items-center justify-center">
-        <span className="absolute inset-0 -m-8 rounded-full bg-highlight/50 blur-2xl" />
-        <span className="relative flex h-36 w-36 items-center justify-center rounded-full bg-primary text-7xl font-extrabold text-foreground shadow-card">
-          {heroNumber}
-        </span>
-      </div>
-    );
-  }
-  if (variant === 'compass') {
-    return (
-      <div className="inline-flex h-32 w-32 items-center justify-center rounded-full bg-success shadow-card">
-        <Compass className="h-16 w-16 text-foreground" strokeWidth={1.8} />
-      </div>
-    );
-  }
-  if (variant === 'family') {
-    return (
-      <div className="inline-flex h-32 w-32 items-center justify-center rounded-full bg-accent/40 shadow-card">
-        <Users className="h-16 w-16 text-foreground" strokeWidth={1.8} />
-      </div>
-    );
-  }
+  if (variant === 'birthday') return <ArtWelcome heroNumber={heroNumber} />;
+  if (variant === 'compass') return <ArtCollection />;
+  if (variant === 'family') return <ArtFamily />;
+  return <ArtHowItWorks />;
+}
+
+/* ── Slide 1: Bienvenida / Cumpleaños ── */
+function ArtWelcome({ heroNumber }: { heroNumber: number }) {
   return (
-    <div className="flex justify-center gap-3">
-      <StepIcon icon={Camera} bg="bg-primary" />
-      <StepIcon icon={Compass} bg="bg-accent" />
-      <StepIcon icon={MapIcon} bg="bg-success" />
+    <div className="relative w-full rounded-3xl bg-gradient-to-br from-primary/30 via-highlight/20 to-accent/20 px-6 py-8 text-center overflow-hidden">
+      {/* Fondo de puntos decorativos */}
+      <span className="absolute -top-6 -left-6 text-7xl opacity-20">🌿</span>
+      <span className="absolute -bottom-4 -right-4 text-6xl opacity-15">🌺</span>
+
+      {/* Número de edad destacado */}
+      <div className="relative mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary shadow-card">
+        <span className="text-5xl font-extrabold">{heroNumber}</span>
+        <span className="absolute -top-2 -right-2 text-3xl">🎉</span>
+      </div>
+
+      {/* Desfile de animales */}
+      <div className="flex justify-center gap-2 text-4xl">
+        <span style={{ animationDelay: '0ms' }} className="animate-bounce inline-block">🦁</span>
+        <span style={{ animationDelay: '80ms' }} className="animate-bounce inline-block">🐘</span>
+        <span style={{ animationDelay: '160ms' }} className="animate-bounce inline-block">🦋</span>
+        <span style={{ animationDelay: '240ms' }} className="animate-bounce inline-block">🐬</span>
+        <span style={{ animationDelay: '320ms' }} className="animate-bounce inline-block">🦜</span>
+      </div>
+      <div className="mt-2 flex justify-center gap-3 text-3xl opacity-70">
+        <span>🐠</span><span>🦊</span><span>🐢</span><span>🦅</span>
+      </div>
     </div>
   );
 }
 
-function StepIcon({ icon: Icon, bg }: { icon: LucideIcon; bg: string }) {
+/* ── Slide 2: Tu Colección ── */
+function ArtCollection() {
+  const animals = [
+    { e: '🦁', name: 'León', color: 'bg-accent/30' },
+    { e: '🐧', name: 'Pingüino', color: 'bg-primary/30' },
+    { e: '🦋', name: 'Mariposa', color: 'bg-highlight/40' },
+    { e: '🐠', name: 'Pez payaso', color: 'bg-primary/20' },
+    { e: '🐢', name: 'Tortuga', color: 'bg-success/30' },
+    { e: '🦅', name: 'Águila', color: 'bg-accent/20' },
+  ];
   return (
-    <div
-      className={cn(
-        'flex h-20 w-20 items-center justify-center rounded-card shadow-soft',
-        bg,
-      )}
-    >
-      <Icon className="h-9 w-9 text-foreground" strokeWidth={1.8} />
+    <div className="w-full">
+      <div className="grid grid-cols-3 gap-2">
+        {animals.map(({ e, name, color }) => (
+          <div
+            key={name}
+            className={cn(
+              'flex flex-col items-center rounded-2xl px-2 py-3 shadow-soft',
+              color,
+            )}
+          >
+            <span className="text-4xl">{e}</span>
+            <span className="mt-1 text-[10px] font-bold text-foreground/70 text-center leading-tight">{name}</span>
+            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary/60" />
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-center text-xs font-semibold text-foreground/50">
+        Tu colección crece con cada aventura 🌟
+      </p>
+    </div>
+  );
+}
+
+/* ── Slide 3: Con papá / familia ── */
+function ArtFamily() {
+  return (
+    <div className="relative w-full rounded-3xl bg-gradient-to-br from-accent/20 to-highlight/30 px-6 py-8 text-center overflow-hidden">
+      <span className="absolute top-3 right-5 text-4xl opacity-30">🌸</span>
+      <span className="absolute bottom-4 left-4 text-3xl opacity-25">🍃</span>
+
+      {/* Escena de aventura en familia */}
+      <div className="flex items-end justify-center gap-2 text-7xl">
+        <span>👨</span>
+        <span className="text-5xl mb-1">🧒</span>
+      </div>
+      <div className="mt-3 text-3xl">🔭</div>
+      <div className="mt-4 flex justify-center gap-3 text-2xl">
+        <span>🌲</span>
+        <span>🐦</span>
+        <span>🌲</span>
+        <span>🦎</span>
+        <span>🌿</span>
+      </div>
+
+      {/* Badge aventura */}
+      <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-foreground/10 px-4 py-1.5">
+        <span className="text-sm">❤️</span>
+        <span className="text-xs font-extrabold text-foreground/80">Aventuras en familia</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Slide 4: Cómo funciona ── */
+function ArtHowItWorks() {
+  const steps = [
+    {
+      emoji: '📸',
+      bg: 'bg-primary',
+      label: 'Fotografía',
+      desc: 'Haz una foto al animal que encuentres',
+    },
+    {
+      emoji: '🔍',
+      bg: 'bg-accent',
+      label: 'Identifica',
+      desc: 'Búscalo y aprende todo sobre él',
+    },
+    {
+      emoji: '🗺️',
+      bg: 'bg-success',
+      label: 'Colecciona',
+      desc: 'Guárdalo en tu mapa de aventuras',
+    },
+  ];
+  return (
+    <div className="w-full space-y-3">
+      {steps.map(({ emoji, bg, label, desc }, i) => (
+        <div
+          key={label}
+          className="flex items-center gap-4 rounded-2xl border border-foreground/8 bg-cream px-4 py-3 shadow-soft"
+        >
+          <div className={cn('flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl shadow-soft', bg)}>
+            {emoji}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-extrabold">
+              <span className="mr-1.5 text-foreground/40">0{i + 1}</span>
+              {label}
+            </p>
+            <p className="text-xs text-foreground/60">{desc}</p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

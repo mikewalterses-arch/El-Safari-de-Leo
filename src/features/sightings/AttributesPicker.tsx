@@ -140,7 +140,7 @@ function ColorChip({ hex, label, active, onClick }: ColorChipProps) {
       className={cn(
         'flex items-center gap-2 rounded-pill border px-3 py-1.5 text-sm font-semibold transition-colors',
         active
-          ? 'border-primary bg-primary/10 text-foreground'
+          ? 'border-primary bg-primary/15 text-foreground ring-2 ring-primary ring-offset-1'
           : 'border-foreground/15 bg-surface text-foreground/70',
       )}
     >

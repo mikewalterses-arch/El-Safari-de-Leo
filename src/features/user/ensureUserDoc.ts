@@ -22,21 +22,18 @@ function newKidId(): string {
 /**
  * Crea `users/{uid}` si no existe, y migra cuentas legacy single-kid al modelo
  * multi-hijo. Idempotente.
+ *
+ * Cuentas nuevas: se crean SIN kids — la app pide al usuario que cree el
+ * primer peque manualmente. Antes creabamos un Leo por defecto, lo que
+ * provocaba IDs huérfanos y datos de plantilla mezclados con datos reales.
  */
 export async function ensureUserDoc(uid: string): Promise<void> {
   const ref = doc(db, 'users', uid);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
-    const firstKid: KidProfile = {
-      id: newKidId(),
-      displayName: DEFAULT_KID_NAME,
-      birthDate: Timestamp.fromDate(DEFAULT_BIRTHDATE),
-      avatarColor: DEFAULT_AVATAR_COLOR,
-      createdAt: Timestamp.now(),
-    };
     const seed: User = {
-      kids: [firstKid],
+      kids: [],
       migratedToMultiKid: true,
       createdAt: Timestamp.now(),
     };

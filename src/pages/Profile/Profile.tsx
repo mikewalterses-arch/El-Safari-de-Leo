@@ -502,10 +502,16 @@ function ChangeUserSection() {
 
 function SignOutSection() {
   const t = useT();
+  const handleSignOut = async () => {
+    // Limpiar el peque activo persistido antes de cerrar sesión: si después
+    // entra otra cuenta, no debe arrastrar el id del peque anterior.
+    useActiveKidStoreImport.getState().clear();
+    await signOut(auth);
+  };
   return (
     <button
       type="button"
-      onClick={() => signOut(auth)}
+      onClick={() => void handleSignOut()}
       className="w-full rounded-button border border-coral/30 bg-coral/5 py-3 text-sm font-semibold text-coral"
     >
       {t('profile.signOut')}

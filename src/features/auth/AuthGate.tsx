@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from './useAuth';
 import { LoginScreen } from './LoginScreen';
 import { NeedsPapa } from './NeedsPapa';
 import { useUserTypeStore } from './userType';
 import { ensureUserDoc } from '@/features/user/ensureUserDoc';
+import { useActiveKidStore } from '@/features/kids/activeKid';
 
 interface AuthGateProps {
   children: ReactNode;
@@ -16,9 +17,20 @@ export function AuthGate({ children }: AuthGateProps) {
   // re-seedar para la nueva cuenta. `useState(false)` no era suficiente porque
   // dejaba el flag activo entre cambios de uid.
   const [seededUid, setSeededUid] = useState<string | null>(null);
+  const lastUidRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      lastUidRef.current = null;
+      return;
+    }
+    // Cambio de cuenta: limpiar el peque activo persistido para que no
+    // arrastre un id de la cuenta anterior (que ya no existe en la nueva).
+    if (lastUidRef.current !== null && lastUidRef.current !== user.uid) {
+      useActiveKidStore.getState().clear();
+    }
+    lastUidRef.current = user.uid;
+
     if (seededUid === user.uid) return;
     ensureUserDoc(user.uid)
       .then(() => setSeededUid(user.uid))

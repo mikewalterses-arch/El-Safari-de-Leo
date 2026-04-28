@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from '@/app/router';
 import { Onboarding } from '@/pages/Onboarding/Onboarding';
@@ -6,6 +6,8 @@ import { AuthGate } from '@/features/auth/AuthGate';
 import { WhoAreYou } from '@/features/auth/WhoAreYou';
 import { useUserTypeStore } from '@/features/auth/userType';
 import { useAuth } from '@/features/auth/useAuth';
+import { useKids } from '@/features/kids/useKids';
+import { CreateFirstKid } from '@/features/kids/CreateFirstKid';
 
 const ONBOARDING_KEY = 'safarideleo:onboardingCompleted';
 
@@ -39,18 +41,43 @@ export function App() {
 
   return (
     <AuthGate>
-      {userType === 'leo' && !completed ? (
-        <Onboarding
-          onComplete={() => {
-            localStorage.setItem(ONBOARDING_KEY, 'true');
-            setCompleted(true);
-          }}
-        />
-      ) : (
-        <RouterProvider router={router} />
-      )}
+      <KidsGate>
+        {userType === 'leo' && !completed ? (
+          <Onboarding
+            onComplete={() => {
+              localStorage.setItem(ONBOARDING_KEY, 'true');
+              setCompleted(true);
+            }}
+          />
+        ) : (
+          <RouterProvider router={router} />
+        )}
+      </KidsGate>
     </AuthGate>
   );
+}
+
+/**
+ * Bloquea la app hasta que el usuario tenga al menos un peque. Antes
+ * creábamos un Leo por defecto en ensureUserDoc, lo que provocaba IDs
+ * huérfanos y datos de plantilla mezclados con datos reales.
+ */
+function KidsGate({ children }: { children: ReactNode }) {
+  const { kids, loading } = useKids();
+  if (loading) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-surface">
+        <span
+          aria-label="Cargando"
+          className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"
+        />
+      </div>
+    );
+  }
+  if (kids.length === 0) {
+    return <CreateFirstKid />;
+  }
+  return <>{children}</>;
 }
 
 function LandingFallback() {

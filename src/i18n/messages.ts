@@ -198,6 +198,8 @@ const es: Messages = {
   'profile.viewIntroNamed': 'Mostrar la intro a {name}',
   'profile.viewIntroToday': '¡Hoy!',
   'profile.help': 'Cómo funciona la app',
+  'diary.noteDelete': 'Borrar nota',
+  'diary.noteDeleteConfirm': '¿Borrar esta nota?',
   'animal.yourPhoto': 'Tu foto',
 
   // Descubrimiento
@@ -552,6 +554,8 @@ const eu: Messages = {
   'profile.viewIntroNamed': '{name}-(r)i sarrera erakutsi',
   'profile.viewIntroToday': 'Gaur!',
   'profile.help': 'Nola funtzionatzen du',
+  'diary.noteDelete': 'Oharra ezabatu',
+  'diary.noteDeleteConfirm': 'Ohar hau ezabatu?',
   'animal.yourPhoto': 'Zure argazkia',
 
   // Aurkikuntza

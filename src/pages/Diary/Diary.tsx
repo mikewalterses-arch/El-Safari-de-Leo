@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin, PenLine, Plus } from 'lucide-react';
+import { Calendar, MapPin, PenLine, Plus, Trash2 } from 'lucide-react';
 import { useAnimals } from '@/features/animals/useAnimals';
 import { useSightings } from '@/features/sightings/useSightings';
 import { useNotes, type JournalNoteDoc } from '@/features/notes/useNotes';
 import { NewNoteForm } from '@/features/notes/NewNoteForm';
+import { deleteNote } from '@/features/notes/createNote';
+import { useAuth } from '@/features/auth/useAuth';
 import { useLocaleStore, useT } from '@/i18n';
 import type { SightingDoc } from '@/stores/firestoreStore';
 
@@ -178,11 +180,37 @@ function AttributeBadges({ sighting }: { sighting: SightingDoc }) {
 
 function NoteCard({ note, date }: { note: JournalNoteDoc; date: string }) {
   const t = useT();
+  const { user } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!user || deleting) return;
+    if (!window.confirm(t('diary.noteDeleteConfirm'))) return;
+    setDeleting(true);
+    try {
+      await deleteNote(user.uid, note.id);
+    } catch (err) {
+      console.error('deleteNote failed', err);
+      setDeleting(false);
+    }
+  };
+
   return (
     <li className="rounded-card border border-foreground/10 bg-highlight/40 p-4">
-      <p className="flex items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-foreground/60">
-        <PenLine className="h-3 w-3" /> {t('diary.noteLabel')}
-      </p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="flex items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-foreground/60">
+          <PenLine className="h-3 w-3" /> {t('diary.noteLabel')}
+        </p>
+        <button
+          type="button"
+          onClick={() => void handleDelete()}
+          disabled={deleting}
+          aria-label={t('diary.noteDelete')}
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-foreground/40 transition-colors hover:bg-coral/10 hover:text-coral disabled:opacity-50"
+        >
+          <Trash2 className="h-4 w-4" strokeWidth={2.2} />
+        </button>
+      </div>
       <p className="mt-2 whitespace-pre-line text-base leading-relaxed">
         {note.text}
       </p>
